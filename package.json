@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:client": "pnpm dev --filter=client",
-    "dev:server": "pnpm dev --filter=server"
+    "dev:server": "pnpm dev --filter=server",
+    "build" : "turbo run build"
   },
   "keywords": [],
   "author": "",
