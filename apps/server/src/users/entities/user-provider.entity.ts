@@ -18,7 +18,9 @@ export class UserProvider {
   @Column({ unique: true })
   providerUserId: string; // Providerdan kelgan unique ID
 
-  @ManyToOne(() => User, (user) => user.providers, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user: User) => user.providers, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @Column()
