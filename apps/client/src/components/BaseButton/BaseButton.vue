@@ -4,6 +4,7 @@ interface PropsInterface extends ButtonProps {
   bgColor?: string
   borderColor?: string
   form?: string
+  height?:string
 }
 const { size = 'large', bgColor } = defineProps<PropsInterface>()
 </script>
@@ -49,6 +50,7 @@ const { size = 'large', bgColor } = defineProps<PropsInterface>()
 .ant-btn {
   padding-left: 20px !important;
   padding-right: 20px !important;
+  height : v-bind(height) !important;
 }
 .ant-btn.has-own-bg {
   background: v-bind('bgColor') !important;

@@ -2,7 +2,15 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMenuItemsList } from './composables/useMenuItemsList'
-
+import { useQuery } from '@tanstack/vue-query'
+import { queryKeys } from '@/config/queryKeys'
+import { useGet } from '@/services/api.service'
+const {} = useQuery({
+  queryKey : [queryKeys.user.me],
+  queryFn : () => {
+    return useGet('/api/auth/profile')
+  }
+})
 const router = useRouter()
 const { menuItemsList } = useMenuItemsList()
 const isExpanded = ref(true)

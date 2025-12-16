@@ -1,4 +1,16 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
+import BaseFormLabel from '@/components/BaseFormLabel/BaseFormLabel.vue'
+import BaseInput from '@/components/BaseInput/BaseInput.vue'
+import BaseInputPassword from '@/components/BaseInputPassword/BaseInputPassword.vue'
+import { Form, FormItem } from 'ant-design-vue'
+import { useRegisterForm } from './useRegisterForm'
+const { formRef, formState, rules,isPending,mutateAsync } = useRegisterForm()
+
+function handleFinish() {
+  mutateAsync()
+}
+</script>
 <template>
   <div
     class="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark text-[#1d2939] dark:text-white group/design-root overflow-x-hidden font-display"
@@ -31,83 +43,75 @@
               </p>
             </div>
             <!-- Registration Form -->
-            <div class="flex w-full flex-col gap-5">
-              <!-- Full Name Field -->
-              <label class="flex flex-col flex-1">
-                <p class="text-[#f0fdf4] text-base font-medium leading-normal pb-2">Full Name</p>
-                <input
-                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#f0fdf4] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#3b5443] bg-[#1c271f] focus:border-primary h-14 placeholder:text-[#9db9a6] p-[15px] text-base font-normal leading-normal transition-colors"
-                  placeholder="Enter your full name"
-                  value=""
-                />
-              </label>
-              <!-- Email Address Field -->
-              <label class="flex flex-col flex-1">
-                <p class="text-[#f0fdf4] text-base font-medium leading-normal pb-2">
-                  Email Address
-                </p>
-                <input
-                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#f0fdf4] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#3b5443] bg-[#1c271f] focus:border-primary h-14 placeholder:text-[#9db9a6] p-[15px] text-base font-normal leading-normal transition-colors"
-                  placeholder="Enter your email"
-                  type="email"
-                  value=""
-                />
-              </label>
-              <!-- Password Field -->
-              <label class="flex flex-col flex-1">
-                <p class="text-[#f0fdf4] text-base font-medium leading-normal pb-2">Password</p>
-                <div
-                  class="flex w-full flex-1 items-stretch rounded-lg focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-colors"
-                >
-                  <input
-                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-l-lg text-[#f0fdf4] focus:outline-0 focus:ring-0 border border-[#3b5443] bg-[#1c271f] focus:border-primary h-14 placeholder:text-[#9db9a6] p-[15px] border-r-0 pr-2 text-base font-normal leading-normal"
-                    placeholder="Enter your password"
-                    type="password"
-                    value=""
-                  />
-                  <button
-                    class="text-[#9db9a6] flex border border-[#3b5443] bg-[#1c271f] items-center justify-center px-4 rounded-r-lg border-l-0 hover:text-primary focus:outline-none focus:text-primary transition-colors"
-                  >
-                    <span class="material-symbols-outlined" data-icon="Eye">visibility_off</span>
-                  </button>
-                </div>
-                <p class="text-sm text-[#9db9a6] mt-1.5">
-                  Password must be at least 8 characters long.
-                </p>
-              </label>
-              <!-- Confirm Password Field -->
-              <label class="flex flex-col flex-1">
-                <p class="text-[#f0fdf4] text-base font-medium leading-normal pb-2">
-                  Confirm Password
-                </p>
-                <div
-                  class="flex w-full flex-1 items-stretch rounded-lg focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-colors"
-                >
-                  <input
-                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-l-lg text-[#f0fdf4] focus:outline-0 focus:ring-0 border border-[#3b5443] bg-[#1c271f] focus:border-primary h-14 placeholder:text-[#9db9a6] p-[15px] border-r-0 pr-2 text-base font-normal leading-normal"
-                    placeholder="Confirm your password"
-                    type="password"
-                    value=""
-                  />
-                  <button
-                    class="text-[#9db9a6] flex border border-[#3b5443] bg-[#1c271f] items-center justify-center px-4 rounded-r-lg border-l-0 hover:text-primary focus:outline-none focus:text-primary transition-colors"
-                  >
-                    <span class="material-symbols-outlined" data-icon="Eye">visibility_off</span>
-                  </button>
-                </div>
-              </label>
+            <Form
+              ref="formRef"
+              :rules="rules"
+              :model="formState"
+              @finish="handleFinish"
+              class="flex w-full flex-col"
+            >
+              <!-- firstName -->
+              <FormItem name="firstName">
+                <BaseFormLabel for="firstName" required>Ismingiz</BaseFormLabel>
+                <BaseInput
+                  placeholder="Ismingizni kiriting"
+                  height="52px"
+                  id="firstName"
+                  v-model="formState.firstName"
+                ></BaseInput>
+              </FormItem>
+              <!-- lastName -->
+              <FormItem name="lastName">
+                <BaseFormLabel for="lastName" required>Familiyangiz</BaseFormLabel>
+                <BaseInput
+                  placeholder="Familiyangizni kiriting"
+                  height="52px"
+                  id="lastName"
+                  v-model="formState.lastName"
+                ></BaseInput>
+              </FormItem>
+              <!-- email -->
+              <FormItem name="email">
+                <BaseFormLabel for="email" required>Elektron pochta</BaseFormLabel>
+                <BaseInput
+                  placeholder="Elektron pochtangizni kiriting"
+                  height="52px"
+                  id="email"
+                  v-model="formState.email"
+                ></BaseInput>
+              </FormItem>
+              <!-- passowrd -->
+              <FormItem name="password">
+                <BaseFormLabel for="password" required>Parol</BaseFormLabel>
+                <BaseInputPassword
+                  placeholder="Parol kiriting"
+                  height="52px"
+                  id="password"
+                  v-model="formState.password"
+                ></BaseInputPassword>
+              </FormItem>
+              <!--confirm passowrd -->
+              <FormItem name="confirmPassword">
+                <BaseFormLabel for="confirmPassword" required>Parolni tasdiqlang</BaseFormLabel>
+                <BaseInputPassword
+                  placeholder="Parolni tasdiqlang"
+                  height="52px"
+                  id="confirmPassword"
+                  v-model="formState.confirmPassword"
+                ></BaseInputPassword>
+              </FormItem>
               <!-- CTA Button -->
-              <button
-                class="flex items-center justify-center whitespace-nowrap h-14 p-4 rounded-lg text-base font-semibold text-background-dark bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark transition-all mt-4"
+              <BaseButton :loading="isPending" html-type="submit" type="primary" height="52px"
+                >Ro'yxatdan o'tish</BaseButton
               >
-                Create Account
-              </button>
               <!-- Secondary Link -->
               <p class="text-center text-[#9db9a6] text-sm">
                 Already have an account?
-                <a class="font-semibold text-primary hover:underline" href="#">Log In</a>
+                <RouterLink class="font-semibold text-primary hover:underline" to="/auth/login"
+                  >Kirish</RouterLink
+                >
               </p>
-            </div>
+            </Form>
           </main>
           <!-- Footer -->
           <footer class="mt-12 text-center">

@@ -36,6 +36,7 @@ import { useAttrs, useSlots } from 'vue'
 const slots = useSlots() as Record<string, any>
 interface Props extends InputProps {
   readonly?: boolean
+  height?:string
 }
 const { size = 'large' } = defineProps<Props>()
 const model = defineModel<string | number | undefined>()
@@ -43,4 +44,8 @@ const attrs = useAttrs()
 const emit = defineEmits(['change','input'])
 </script>
 
-<style scoped></style>
+<style scoped>
+:global(.ant-input-affix-wrapper) {
+  height : v-bind(height) !important;
+}
+</style>

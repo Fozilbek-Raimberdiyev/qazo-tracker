@@ -27,19 +27,14 @@ export class AuthService {
   async login(user: any) {
     const payload = { email: user.email, sub: user.id };
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 
   async register(registerDto: RegisterDto) {
-    // Password hash qilish
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
     // User yaratish
-    const user = await this.usersService.create({
-      ...registerDto,
-      password: hashedPassword,
-    });
+    const user = await this.usersService.create(registerDto);
 
     // JWT token qaytarish
     return this.login(user);

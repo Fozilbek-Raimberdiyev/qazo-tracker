@@ -1,4 +1,16 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { Form, FormItem } from 'ant-design-vue'
+import { useLoginForm } from './useLoginForm'
+import BaseFormLabel from '@/components/BaseFormLabel/BaseFormLabel.vue'
+import BaseInput from '@/components/BaseInput/BaseInput.vue'
+import BaseInputPassword from '@/components/BaseInputPassword/BaseInputPassword.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
+const { formRef, formState, rules, isPending, mutateAsync } = useLoginForm()
+
+function handleFinish() {
+  mutateAsync()
+}
+</script>
 
 <template>
   <div
@@ -35,61 +47,41 @@
                 Log in to continue monitoring your prayers.
               </p>
             </div>
-            <form class="flex flex-col gap-4 w-full">
-              <label class="flex flex-col w-full">
-                <p class="text-white text-base font-medium leading-normal pb-2 font-display">
-                  Email Address
-                </p>
-                <input
-                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#3b5443] bg-[#1c271f] focus:border-primary h-14 placeholder:text-[#9db9a6] p-[15px] text-base font-normal leading-normal font-display"
-                  placeholder="Enter your email"
-                  type="email"
-                  value=""
-                />
-              </label>
-              <label class="flex flex-col w-full">
-                <p class="text-white text-base font-medium leading-normal pb-2 font-display">
-                  Password
-                </p>
-                <div class="relative flex w-full flex-1 items-stretch">
-                  <input
-                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#3b5443] bg-[#1c271f] focus:border-primary h-14 placeholder:text-[#9db9a6] p-[15px] pr-12 text-base font-normal leading-normal font-display"
-                    placeholder="Enter your password"
-                    type="password"
-                    value=""
-                  />
-                  <button
-                    class="absolute inset-y-0 right-0 flex items-center pr-4 text-[#9db9a6] hover:text-white"
-                    type="button"
-                  >
-                    <span
-                      class="material-symbols-outlined"
-                      data-icon="Eye"
-                      data-size="24px"
-                      data-weight="regular"
-                      >visibility</span
-                    >
-                  </button>
-                </div>
-              </label>
+            <Form :model="formState" :rules ref="formRef" @finish="handleFinish" class="flex flex-col gap-4 w-full">
+              <!-- firstName -->
+              <FormItem name="email">
+                <BaseFormLabel for="email" required> Elektron pochta </BaseFormLabel>
+                <BaseInput
+                  height="52px"
+                  v-model="formState.email"
+                  placeholder="Elektron pochtangizni kiriting"
+                  id="email"
+                ></BaseInput>
+              </FormItem>
+              <!-- password -->
+              <FormItem name="password">
+                <BaseFormLabel for="password" required> Parol </BaseFormLabel>
+                <BaseInputPassword
+                  height="52px"
+                  v-model="formState.password"
+                  placeholder="Elektron pochtangizni kiriting"
+                  id="password"
+                ></BaseInputPassword>
+              </FormItem>
               <a
                 class="text-[#9db9a6] text-sm font-normal leading-normal pt-1 text-right underline hover:text-primary font-display"
                 href="#"
                 >Forgot Password?</a
               >
+              <BaseButton :loading="isPending" height="52px" type="primary" html-type="submit">Kirish</BaseButton>
               <button
-                class="flex items-center justify-center w-full h-14 px-6 mt-2 font-display text-base font-bold text-background-dark bg-primary rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark transition-colors"
-                type="submit" @click="$router.push('/dashboard')"
-              >
-                Login
-              </button>
-              <button @click="$router.push('/auth/register')"
+                @click="$router.push('/auth/register')"
                 class="flex items-center justify-center w-full h-14 px-6 font-display text-base font-bold text-white bg-primary/20 rounded-lg hover:bg-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark transition-colors"
                 type="button"
               >
                 Create an Account
               </button>
-            </form>
+            </Form>
             <div class="flex items-center gap-4">
               <hr class="w-full border-t border-[#3b5443]" />
               <span class="text-[#9db9a6] text-sm font-medium">OR</span>

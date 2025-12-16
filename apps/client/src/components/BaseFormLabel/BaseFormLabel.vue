@@ -6,6 +6,6 @@ const props = defineProps<{
 </script>
 <template>
    <label :for="props.for" class="text-primary text-sm font-medium leading-[150%] mb-2 inline-block" ><slot></slot>
-   <span v-if="required" class="text-[#E62E2E]">*</span>
+   <span v-if="required" class="text-[#E62E2E] ml-1">*</span>
    </label>
 </template>
