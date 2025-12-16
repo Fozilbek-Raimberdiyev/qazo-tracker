@@ -83,7 +83,7 @@
               >
                 Login
               </button>
-              <button
+              <button @click="$router.push('/auth/register')"
                 class="flex items-center justify-center w-full h-14 px-6 font-display text-base font-bold text-white bg-primary/20 rounded-lg hover:bg-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark transition-colors"
                 type="button"
               >
