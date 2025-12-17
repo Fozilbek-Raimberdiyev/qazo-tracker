@@ -13,4 +13,5 @@ export const toUserResDto = (user: User): UserResDto =>
     picture: user.picture,
     locale: user.locale,
     googleRaw: user.googleRaw,
+    qazoPrayers: user.qazoPrayers,
   });

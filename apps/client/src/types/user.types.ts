@@ -21,4 +21,5 @@ export interface UserProfile {
   picture: string
   locale: string | null
   googleRaw: GoogleRaw
+  qazoPrayers: any[]
 }

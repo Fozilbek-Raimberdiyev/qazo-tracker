@@ -2,17 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMenuItemsList } from './composables/useMenuItemsList'
-import { useQuery } from '@tanstack/vue-query'
-import { queryKeys } from '@/config/queryKeys'
-import { useGet } from '@/services/api.service'
-import type { UserProfile } from '@/types/user.types'
-const { data: user, isPending } = useQuery({
-  queryKey: [queryKeys.user.me],
-  queryFn: () => {
-    return useGet<UserProfile>('/api/auth/profile')
-  },
-  select: (data) => data.data,
-})
+import { useAuth } from '@/composables/useAuth'
+const { user } = useAuth()
 const router = useRouter()
 const { menuItemsList } = useMenuItemsList()
 const isExpanded = ref(true)
@@ -128,9 +119,7 @@ router.beforeEach(() => {
           <div
             class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
             data-alt="User avatar image"
-            :style="
-              {backgroundImage : `url(${user?.picture})`}
-            "
+            :style="{ backgroundImage: `url(${user?.picture})` }"
           ></div>
           <div v-show="isExpanded" class="flex flex-col overflow-hidden">
             <h3 class="dark:text-white text-base font-medium leading-normal whitespace-nowrap">

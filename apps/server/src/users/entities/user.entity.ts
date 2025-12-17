@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserProvider } from './user-provider.entity';
+import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
 
 @Entity('users')
 export class User {
@@ -57,4 +58,7 @@ export class User {
   @ApiProperty({ type: () => [UserProvider] })
   @OneToMany(() => UserProvider, (provider) => provider.user, { cascade: true })
   providers: UserProvider[];
+  @ApiProperty({ type: () => [QazoPrayer] })
+  @OneToMany(() => QazoPrayer, (prayer) => prayer.user, { cascade: true })
+  qazoPrayers: QazoPrayer[];
 }

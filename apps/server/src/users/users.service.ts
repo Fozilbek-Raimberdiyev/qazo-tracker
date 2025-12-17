@@ -29,7 +29,7 @@ export class UsersService {
   async findOne(id: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { id },
-      relations: ['providers'],
+      relations: ['providers', 'qazoPrayers'],
     });
   }
 
@@ -52,7 +52,7 @@ export class UsersService {
     if (userData.password) {
       userData.password = await bcrypt.hash(userData.password, 10);
     }
-    
+
     const user = this.usersRepository.create(userData);
     return this.usersRepository.save(user);
   }
@@ -68,11 +68,11 @@ export class UsersService {
 
     await this.usersRepository.update(id, userData);
     const updatedUser = await this.findOne(id);
-    
+
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    
+
     return updatedUser;
   }
 
@@ -81,7 +81,7 @@ export class UsersService {
    */
   async remove(id: string): Promise<void> {
     const result = await this.usersRepository.delete(id);
-    
+
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -90,7 +90,10 @@ export class UsersService {
   /**
    * Provider orqali avtorizatsiya qilgan foydalanuvchini topish
    */
-  async findProviderById(providerUserId: string, provider: string): Promise<UserProvider | null> {
+  async findProviderById(
+    providerUserId: string,
+    provider: string,
+  ): Promise<UserProvider | null> {
     return this.userProviderRepository.findOne({
       where: { providerUserId, provider },
       relations: ['user'],
@@ -100,7 +103,9 @@ export class UsersService {
   /**
    * Yangi provider ma'lumotlarini saqlash
    */
-  async createProvider(providerData: Partial<UserProvider>): Promise<UserProvider> {
+  async createProvider(
+    providerData: Partial<UserProvider>,
+  ): Promise<UserProvider> {
     const provider = this.userProviderRepository.create(providerData);
     return this.userProviderRepository.save(provider);
   }
@@ -108,9 +113,12 @@ export class UsersService {
   /**
    * Foydalanuvchiga yangi provider qo'shish
    */
-  async addProviderToUser(userId: string, providerData: Partial<UserProvider>): Promise<User> {
+  async addProviderToUser(
+    userId: string,
+    providerData: Partial<UserProvider>,
+  ): Promise<User> {
     const user = await this.findOne(userId);
-    
+
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }

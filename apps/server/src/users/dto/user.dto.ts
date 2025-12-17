@@ -29,6 +29,9 @@ export class UserResDto {
   @ApiProperty({ nullable: true })
   googleRaw?: any;
 
+  @ApiProperty({ nullable: true })
+  qazoPrayers?: any;
+
   /*  extra: provider ID larini qaytarmoqchi bo‘lsangiz
   @ApiProperty({ type: [String] })
   providerIds: string[];

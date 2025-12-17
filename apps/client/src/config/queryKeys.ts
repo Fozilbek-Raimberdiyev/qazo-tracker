@@ -6,5 +6,9 @@ auth : {
 },
 user : {
   me : "user.me"
+},
+prayer : {
+  generate : 'prayer.generate',
+  list : 'prayer.list'
 }
 }
