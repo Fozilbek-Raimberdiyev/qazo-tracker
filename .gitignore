@@ -1,3 +1,6 @@
 node_modules
 .turbo
 apps/server/dist
+
+apps/server/.env
+apps/client/.env
