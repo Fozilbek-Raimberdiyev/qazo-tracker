@@ -25,6 +25,7 @@
     "@tanstack/vue-query-devtools": "^6.1.2",
     "@vuepic/vue-datepicker": "^12.1.0",
     "@vueuse/core": "^14.1.0",
+    "@vueuse/router": "^14.1.0",
     "ant-design-vue": "4.2.6",
     "axios": "^1.13.2",
     "pinia": "^3.0.4",

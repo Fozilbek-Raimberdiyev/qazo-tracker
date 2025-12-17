@@ -5,11 +5,13 @@ import { useMenuItemsList } from './composables/useMenuItemsList'
 import { useQuery } from '@tanstack/vue-query'
 import { queryKeys } from '@/config/queryKeys'
 import { useGet } from '@/services/api.service'
-const {} = useQuery({
-  queryKey : [queryKeys.user.me],
-  queryFn : () => {
-    return useGet('/api/auth/profile')
-  }
+import type { UserProfile } from '@/types/user.types'
+const { data: user, isPending } = useQuery({
+  queryKey: [queryKeys.user.me],
+  queryFn: () => {
+    return useGet<UserProfile>('/api/auth/profile')
+  },
+  select: (data) => data.data,
 })
 const router = useRouter()
 const { menuItemsList } = useMenuItemsList()
@@ -39,7 +41,7 @@ const captureOrigin = () => {
     const rect = mainContent.getBoundingClientRect()
     originPosition.value = {
       x: rect.left + rect.width / 2, // Center horizontally
-      y: rect.top // Top of main content
+      y: rect.top, // Top of main content
     }
   }
 }
@@ -51,7 +53,7 @@ const setOriginFromButton = () => {
     const rect = mainContent.getBoundingClientRect()
     originPosition.value = {
       x: rect.left + rect.width / 2, // Center horizontally
-      y: rect.top // Top of main content
+      y: rect.top, // Top of main content
     }
   }
 }
@@ -63,12 +65,14 @@ router.beforeEach(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen font-display bg-background-light dark:bg-background-dark overflow-x-hidden">
+  <div
+    class="flex min-h-screen font-display bg-background-light dark:bg-background-dark overflow-x-hidden"
+  >
     <!-- Side Navigation Bar -->
     <aside
       :class="[
         'fixed top-0 left-0 h-screen shrink-0 p-4 flex flex-col justify-between sidebar border-r border-solid border-(--color-border-light) dark:border-(--color-border-dark) transition-all duration-300 z-10',
-        isExpanded ? 'w-64' : 'w-20'
+        isExpanded ? 'w-80' : 'w-20',
       ]"
     >
       <!-- Toggle Button - Positioned on border -->
@@ -118,22 +122,22 @@ router.beforeEach(() => {
         <div
           :class="[
             'flex items-center gap-4 p-3 border-t border-white/10',
-            !isExpanded && 'justify-center'
+            !isExpanded && 'justify-center',
           ]"
         >
           <div
             class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
             data-alt="User avatar image"
-            style="
-              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCcTQnXUatckdJ09_7CEZcm5-n85ZHypQ7Y7Am49kc0N7wdbuTpymfkH-CmPPOsOKPx1HFBwhixLYQQu-w_28P5xE6M3BlewnspqPS0rGwN4OcWHZvfAtMebCkkZ4fye7XUPmIEFnqaKB3iwE7c_zLTWDUZZNgceQQ6jrW4JTeaznj7S8PeVHr-p-cq8G4vIeU5pM9j0UwUsnHu17duPXUvLzDUuytrxlKkoWdbbcfm384tAFUQnzv2GwNPwC-Payl__xht2dgb3GY');
+            :style="
+              {backgroundImage : `url(${user?.picture})`}
             "
           ></div>
           <div v-show="isExpanded" class="flex flex-col overflow-hidden">
             <h3 class="dark:text-white text-base font-medium leading-normal whitespace-nowrap">
-              Aisha Khan
+              {{ user?.firstName + ' ' + user?.lastName }}
             </h3>
             <span class="dark:text-white/60 text-sm font-normal leading-normal whitespace-nowrap">
-              aisha.khan@email.com
+              {{ user?.email }}
             </span>
           </div>
         </div>
@@ -150,13 +154,17 @@ router.beforeEach(() => {
           </span>
         </RouterLink>
 
-         <RouterLink  to="/auth/login"
+        <RouterLink
+          to="/auth/login"
           @click="$router.push('/auth/login')"
           class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors"
           :title="!isExpanded ? 'Log Out' : ''"
         >
           <span class="material-symbols-outlined">logout</span>
-          <span v-show="isExpanded" class="text-sm font-medium leading-normal whitespace-nowrap dark:text-white/70">
+          <span
+            v-show="isExpanded"
+            class="text-sm font-medium leading-normal whitespace-nowrap dark:text-white/70"
+          >
             Log Out
           </span>
         </RouterLink>
@@ -166,20 +174,18 @@ router.beforeEach(() => {
     <!-- Main Content -->
     <main
       :class="[
-        'w-full p-6 transition-all duration-300 overflow-hidden relative',
-        isExpanded ? 'ml-64' : 'ml-20'
+        'w-full 2xl:px-12 p-6 transition-all duration-300 overflow-hidden relative',
+        isExpanded ? 'ml-80' : 'ml-20',
       ]"
       :style="{
         '--origin-x': `${originPosition.x}px`,
         '--origin-y': `${originPosition.y}px`,
         '--transition-duration': `${transitionSpeed}s`,
-        '--transition-duration-out': `${transitionSpeed * 0.7}s`
+        '--transition-duration-out': `${transitionSpeed * 0.7}s`,
       }"
     >
       <RouterView v-slot="{ Component, route }">
-        <Transition
-          :name="(route.meta.transition as string) || defaultTransition"
-        >
+        <Transition :name="(route.meta.transition as string) || defaultTransition">
           <div :key="route.path" class="page-wrapper">
             <component :is="Component" />
           </div>
@@ -196,8 +202,6 @@ router.beforeEach(() => {
   border-radius: 8px;
   color: white;
 }
-
-
 
 /* Page Transitions */
 .page-wrapper {
@@ -396,7 +400,8 @@ router.beforeEach(() => {
 }
 
 .slide-vertical-leave-active {
-  animation: slideVerticalOut var(--transition-duration-out, 0.3s) cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  animation: slideVerticalOut var(--transition-duration-out, 0.3s)
+    cubic-bezier(0.55, 0.085, 0.68, 0.53);
 }
 
 @keyframes slideVerticalIn {

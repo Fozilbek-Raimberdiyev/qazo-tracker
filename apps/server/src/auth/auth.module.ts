@@ -10,10 +10,9 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { User } from '../users/entities/user.entity';
 import { UserProvider } from '../users/entities/user-provider.entity';
 import { UsersService } from '../users/users.service';
-
 @Module({
   imports: [
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '7d' },

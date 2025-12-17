@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
   UnauthorizedException,
+  Res,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -19,11 +20,16 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UsersService } from 'src/users/users.service';
+import { toUserResDto } from 'src/users/mappers/user-mapper';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: "Yangi foydalanuvchi ro'yxatdan o'tish" })
@@ -92,8 +98,11 @@ export class AuthController {
     },
   })
   @UseGuards(AuthGuard('google'))
-  googleAuthCallback(@Req() req) {
-    return req.user;
+  googleAuthCallback(@Req() req, @Res() res) {
+    const jwt = req.user; // { accessToken: 'xxx' }
+    return res.redirect(
+      `http://localhost:5173/oauth/success?token=${jwt.accessToken}`,
+    );
   }
 
   @Get('profile')
@@ -102,7 +111,12 @@ export class AuthController {
   @ApiResponse({ status: 200, description: "Profil ma'lumotlari" })
   @ApiResponse({ status: 401, description: "Token yo'q yoki yaroqsiz" })
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@Req() req) {
-    return req.user;
+  async getProfile(@Req() req) {
+    const user = await this.usersService.findOne(req.user.id);
+    if (!user) {
+      throw new UnauthorizedException();
+    } else {
+      return toUserResDto(user);
+    }
   }
 }

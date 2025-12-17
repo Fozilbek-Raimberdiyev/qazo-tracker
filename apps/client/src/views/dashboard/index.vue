@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl">
+  <div class="">
 <!-- PageHeading -->
 <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
 <div class="flex min-w-72 flex-col gap-2">

@@ -4,7 +4,7 @@ import { TypographyTitle, TypographyText, Calendar, TypographyParagraph } from '
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl">
+  <div class="">
     <!-- PageHeading -->
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div class="flex flex-col gap-2">

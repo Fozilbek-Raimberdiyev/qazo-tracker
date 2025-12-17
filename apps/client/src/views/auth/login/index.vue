@@ -6,7 +6,9 @@ import BaseInput from '@/components/BaseInput/BaseInput.vue'
 import BaseInputPassword from '@/components/BaseInputPassword/BaseInputPassword.vue'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 const { formRef, formState, rules, isPending, mutateAsync } = useLoginForm()
-
+function googleLogin() {
+  window.location.href = 'http://localhost:3000/api/auth/google'
+}
 function handleFinish() {
   mutateAsync()
 }
@@ -87,7 +89,7 @@ function handleFinish() {
               <span class="text-[#9db9a6] text-sm font-medium">OR</span>
               <hr class="w-full border-t border-[#3b5443]" />
             </div>
-            <button
+            <button @click="googleLogin"
               class="flex items-center justify-center w-full h-14 px-6 gap-3 font-display text-base font-bold text-white bg-transparent border border-[#3b5443] rounded-lg hover:bg-[#1c271f] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background-dark transition-colors"
               type="button"
             >
