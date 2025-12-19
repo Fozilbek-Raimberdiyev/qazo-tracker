@@ -112,7 +112,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "Token yo'q yoki yaroqsiz" })
   @UseGuards(AuthGuard('jwt'))
   async getProfile(@Req() req) {
-    const user = await this.usersService.findOne(req.user.id);
+    const user = await this.usersService.findOne(req.user.userId);
     if (!user) {
       throw new UnauthorizedException();
     } else {

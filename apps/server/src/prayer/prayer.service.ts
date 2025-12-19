@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QazoPrayer } from './entities/prayer.entity';
 import { User } from '../users/entities/user.entity';
+import { PrayerTypes } from 'src/prayerTypes/entities/prayerTypes.entity';
 
 const PRAYER_NAMES = ['bomdod', 'peshin', 'asr', 'shom', 'xufton'] as const;
 
@@ -21,24 +22,28 @@ export class PrayerService {
     user: { userId: string },
     fromDate: string, // "2025-01-01"
     toDate: string, // "2025-01-31"
-  ): Promise<QazoPrayer[]> {
-    const from = new Date(fromDate);
-    const to = new Date(toDate);
-    const prayers: QazoPrayer[] = [];
-
-    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0]; // "2025-01-15"
-
-      for (const prayerName of PRAYER_NAMES) {
-        const prayer = this.qazoRepo.create({
-          date: dateStr,
-          prayerName,
-          userId: user.userId,
-        });
-        prayers.push(prayer);
-      }
-    }
-    return this.qazoRepo.save(prayers);
+  ): Promise<{ success: boolean }> {
+    const sql = `
+    INSERT INTO qazo_prayers (date, "prayerTypeId", "userId", "isCompleted")
+    SELECT
+      date_series.date::date,
+      pt.id,
+      $3,
+      false
+    FROM generate_series(
+      to_date($1, 'DD-MM-YYYY'),
+      to_date($2, 'DD-MM-YYYY'),
+      INTERVAL '1 day'
+    ) AS date_series(date)
+    CROSS JOIN prayer_types pt
+    WHERE pt.key IN ('bomdod', 'peshin', 'asr', 'shom', 'xufton','vitr')
+    ORDER BY date_series.date, pt.order_no
+    ON CONFLICT ("userId", date, "prayerTypeId") DO NOTHING
+  `;
+    await this.qazoRepo.manager.query(sql, [fromDate, toDate, user.userId]);
+    return {
+      success: true,
+    };
   }
 
   /**
@@ -48,9 +53,8 @@ export class PrayerService {
     const qb = this.qazoRepo
       .createQueryBuilder('prayer')
       .where('prayer.userId = :userId', { userId })
-      .orderBy('prayer.date', 'ASC')
-      .addOrderBy('prayer.prayerName', 'ASC');
-
+      .leftJoinAndSelect('prayer.prayerType', 'prayerType')
+      .orderBy('prayer.date', 'ASC');
     if (dateFrom) qb.andWhere('prayer.date >= :dateFrom', { dateFrom });
     if (dateTo) qb.andWhere('prayer.date <= :dateTo', { dateTo });
 

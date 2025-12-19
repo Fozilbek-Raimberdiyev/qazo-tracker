@@ -7,10 +7,11 @@ import { Form, FormItem, TypographyText, TypographyTitle } from 'ant-design-vue'
 import { reactive } from 'vue'
 import { useValidationForm } from '@/composables/useValidationForm'
 import { useI18n } from 'vue-i18n'
-import { useMutation } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { queryKeys } from '@/config/queryKeys'
 import { usePost } from '@/services/api.service'
 import { showSuccessMessage } from '@/utils/message.util'
+const queryClient = useQueryClient()
 const { t } = useI18n()
 interface FormState {
   fromDate: string
@@ -44,6 +45,7 @@ const { isPending, mutateAsync } = useMutation({
     return usePost('/api/prayer/generate', formState)
   },
   onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: [queryKeys.user.me, queryKeys.prayer.list] })
     showSuccessMessage('Qazo namozlari kalendari muvaffaqiyatli yaratildi')
   },
 })
@@ -51,8 +53,6 @@ const { isPending, mutateAsync } = useMutation({
 function handleFinish() {
   mutateAsync()
 }
-
-
 </script>
 
 <template>
@@ -68,17 +68,25 @@ function handleFinish() {
     </div>
     <!-- Form Section -->
     <BaseBox>
-      <Form  :model="formState" ref="formRef" :rules @finish="handleFinish">
+      <Form :model="formState" ref="formRef" :rules @finish="handleFinish">
         <div class="grid grid-cols-2 gap-6 mb-2">
           <!-- Text Field: Start Date -->
           <FormItem name="fromDate">
             <BaseFormLabel for="fromDate" required>Boshlanish sanasi</BaseFormLabel>
-            <BaseDatePicker value-format="YYYY-MM-DD" id="fromDate" v-model="formState.fromDate as any"></BaseDatePicker>
+            <BaseDatePicker
+              value-format="DD-MM-YYYY"
+              id="fromDate"
+              v-model="formState.fromDate as any"
+            ></BaseDatePicker>
           </FormItem>
           <!-- Text Field: End Date -->
           <FormItem name="toDate">
             <BaseFormLabel for="toDate" required>Tugash sanasi</BaseFormLabel>
-            <BaseDatePicker value-format="YYYY-MM-DD" id="toDate" v-model="formState.toDate as any"></BaseDatePicker>
+            <BaseDatePicker
+              value-format="DD-MM-YYYY"
+              id="toDate"
+              v-model="formState.toDate as any"
+            ></BaseDatePicker>
           </FormItem>
         </div>
         <!-- Meta Text -->

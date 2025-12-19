@@ -9,6 +9,7 @@ user : {
 },
 prayer : {
   generate : 'prayer.generate',
-  list : 'prayer.list'
+  list : 'prayer.list',
+  singleComplete : 'prayer.complete'
 }
 }

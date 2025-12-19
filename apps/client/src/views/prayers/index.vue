@@ -13,6 +13,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <List class="" v-if="user?.qazoPrayers.length" :key="user.id"> </List>
+  <List class="" v-if="user?.hasQazoPrayers" :key="user.id"> </List>
   <EmptyStateForm v-else></EmptyStateForm>
 </template>

@@ -10,6 +10,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { User } from '../users/entities/user.entity';
 import { UserProvider } from '../users/entities/user-provider.entity';
 import { UsersService } from '../users/users.service';
+import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -17,7 +18,7 @@ import { UsersService } from '../users/users.service';
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '7d' },
     }),
-    TypeOrmModule.forFeature([User, UserProvider]),
+    TypeOrmModule.forFeature([User, UserProvider, QazoPrayer]),
   ],
   controllers: [AuthController],
   providers: [AuthService, UsersService, JwtStrategy, GoogleStrategy],

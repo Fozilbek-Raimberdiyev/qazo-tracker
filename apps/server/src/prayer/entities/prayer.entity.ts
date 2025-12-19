@@ -4,9 +4,11 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { PrayerTypes } from '../../prayerTypes/entities/prayerTypes.entity';
 
 @Entity('qazo_prayers')
 export class QazoPrayer {
@@ -18,9 +20,14 @@ export class QazoPrayer {
   @Column()
   date: string; // ISO format: "YYYY-MM-DD"
 
-  @ApiProperty({ example: 'bomdod' })
+  @ApiProperty({})
+  @ManyToOne(() => PrayerTypes, { eager: true })
+  @JoinColumn({ name: 'prayerTypeId' })
+  prayerType: PrayerTypes;
+
+  @ApiProperty()
   @Column()
-  prayerName: 'bomdod' | 'peshin' | 'asr' | 'shom' | 'xufton';
+  prayerTypeId: string;
 
   @ApiProperty({ example: false })
   @Column({ default: false })

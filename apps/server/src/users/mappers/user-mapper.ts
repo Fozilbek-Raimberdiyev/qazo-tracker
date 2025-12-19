@@ -1,7 +1,7 @@
 import { User } from '../entities/user.entity';
 import { UserResDto } from '../dto/user.dto';
 
-export const toUserResDto = (user: User): UserResDto =>
+export const toUserResDto = (user: UserResDto): UserResDto =>
   new UserResDto({
     id: user.id,
     firstName: user.firstName,
@@ -13,5 +13,6 @@ export const toUserResDto = (user: User): UserResDto =>
     picture: user.picture,
     locale: user.locale,
     googleRaw: user.googleRaw,
-    qazoPrayers: user.qazoPrayers,
+    hasQazoPrayers: user.hasQazoPrayers,
+    qazoPrayersCount: user.qazoPrayersCount,
   });

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { UserProvider } from './entities/user-provider.entity';
+import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
 
 @Injectable()
 export class UsersService {
@@ -12,6 +14,8 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(UserProvider)
     private userProviderRepository: Repository<UserProvider>,
+    @InjectRepository(QazoPrayer)
+    private qazoRepo: Repository<QazoPrayer>,
   ) {}
 
   /**
@@ -27,10 +31,18 @@ export class UsersService {
    * ID bo'yicha foydalanuvchini olish
    */
   async findOne(id: string): Promise<User | null> {
-    return this.usersRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['providers', 'qazoPrayers'],
+      relations: ['providers'],
     });
+    const count = await this.qazoRepo.count({ where: { userId: id } });
+
+    return {
+      ...user,
+      // @ts-expect-error
+      qazoPrayersCount: count,
+      hasQazoPrayers: count > 0,
+    };
   }
 
   /**

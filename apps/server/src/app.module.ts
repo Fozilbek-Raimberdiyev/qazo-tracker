@@ -7,6 +7,7 @@ import { DatabaseConfig } from './config/database.config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrayerModule } from './prayer/qazo.module';
+import { PrayerTypesModule } from './prayerTypes/prayerTypes.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PrayerModule } from './prayer/qazo.module';
     UsersModule,
     AuthModule,
     PrayerModule,
+    PrayerTypesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

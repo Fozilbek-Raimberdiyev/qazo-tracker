@@ -45,7 +45,7 @@ export class PrayerController {
   @Patch(':id/complete')
   @ApiOperation({ summary: 'Qazo namozini bajarildi deb belgilash' })
   async complete(@Req() req, @Param('id') id: string) {
-    await this.qazoService.completePrayer(id, req.user.id);
+    await this.qazoService.completePrayer(id, req.user.userId);
     return { success: true };
   }
 }

@@ -30,8 +30,10 @@ export class UserResDto {
   googleRaw?: any;
 
   @ApiProperty({ nullable: true })
-  qazoPrayers?: any;
+  qazoPrayersCount?: number;
 
+  @ApiProperty({ nullable: true })
+  hasQazoPrayers?: boolean;
   /*  extra: provider ID larini qaytarmoqchi bo‘lsangiz
   @ApiProperty({ type: [String] })
   providerIds: string[];
