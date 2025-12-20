@@ -17,8 +17,8 @@ export class SeedPrayerTypes1766079524885 implements MigrationInterface {
     ('peshin', 'Peshin', 'الظهر', 'Dhuhr', 'Зухр', 2, 'light_mode'),
     ('asr', 'Asr', 'العصر', 'Asr', 'Аср', 3, 'wb_sunny'),
     ('shom', 'Shom', 'المغرب', 'Maghrib', 'Магриб', 4, 'nights_stay'),
-    ('xufton', 'Xufton', 'العشاء', 'Isha', 'Иша', 5, 'dark_mode'),;
-    ('vitr', 'Vitr', 'الوتر', 'Witr', 'Витр', 6, 'dark_mode');,
+    ('xufton', 'Xufton', 'العشاء', 'Isha', 'Иша', 5, 'dark_mode'),
+    ('vitr', 'Vitr', 'الوتر', 'Witr', 'Витр', 6, 'dark_mode')
   ON CONFLICT (key) DO NOTHING;
 `);
   }

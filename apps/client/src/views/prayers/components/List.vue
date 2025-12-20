@@ -19,15 +19,17 @@ import weekday from 'dayjs/plugin/weekday'
 import localeData from 'dayjs/plugin/localeData'
 import 'dayjs/locale/uz-latn' // O'zbek tili uchun locale
 import { useList } from '../composables/useList'
-import type { CalendarMode } from 'ant-design-vue/es/calendar/generateCalendar'
 import { usePrayerCompleteMutation } from '../composables/usePrayerCompleteMutation'
 import { hexToRgba } from '@/utils/color.util'
 import BaseModal from '@/components/BaseModal/BaseModal.vue'
+import BaseButton from '@/components/BaseButton/BaseButton.vue'
+import BaseSpin from '@/components/BaseSpin/BaseSpin.vue'
 
 // Dayjs konfiguratsiyasi
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 dayjs.locale('uz-latn') // O'zbek tilini o'rnatish
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 dayjs.Ls['uz-latn'] ? (dayjs.Ls['uz-latn'].weekStart = 1) : undefined
 
 // Ant Design Calendar uchun o'zbek locale
@@ -117,7 +119,6 @@ interface PrayerType {
   id: string
 }
 interface Prayer {
-  [x: string]: any
   id: string
   date: string
   prayerType: PrayerType
@@ -147,7 +148,7 @@ function handleSelect(value: Dayjs) {
   }
 }
 
-function handlePanelChange(value: Dayjs | string, mode: CalendarMode) {
+function handlePanelChange(value: Dayjs | string) {
   date.value = value as Dayjs
 }
 
@@ -157,14 +158,10 @@ function showPrayerDetails(prayer: Prayer, event: Event) {
   isModalVisible.value = true
 }
 
-function handleModalOk() {
+function handleCompleteClick() {
   if (selectedPrayer.value) {
     completePrayer(selectedPrayer.value.id)
   }
-  isModalVisible.value = false
-}
-
-function handleModalCancel() {
   isModalVisible.value = false
 }
 
@@ -178,7 +175,7 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
 </script>
 
 <template>
-  <div>
+  <BaseSpin :spinning="isPending">
     <!-- PageHeading -->
     <div class="flex items-center justify-between gap-4">
       <div class="flex flex-col gap-2">
@@ -230,8 +227,141 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
       </div>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
+    <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-4">
       <div class="lg:col-span-3 main-content"></div>
+      <div class="lg:col-span-1">
+        <div class="space-y-6">
+          <BaseBox>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">This Month's Progress</h3>
+            <div class="mt-4 flex flex-col gap-6">
+              <div class="flex items-center justify-between">
+                <div class="relative size-24">
+                  <svg
+                    class="size-full -rotate-90"
+                    viewBox="0 0 36 36"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      class="text-gray-700"
+                      d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></path>
+                    <path
+                      class="text-primary"
+                      d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-dasharray="31, 100"
+                      stroke-width="4"
+                    ></path>
+                  </svg>
+                  <div
+                    class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2 text-center"
+                  >
+                    <span class="text-xl font-bold text-gray-500 dark:text-white">31%</span>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="size-3 rounded-full bg-primary"></span>
+                    <span class="text-sm text-gray-500"
+                      >Completed: <span class="font-bold text-white">57</span></span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="size-3 rounded-full bg-red-500"></span>
+                    <span class="text-sm text-gray-500"
+                      >Pending: <span class="font-bold text-white">123</span></span
+                    >
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Total Prayers: <span class="text-gray-300">180</span>
+                  </p>
+                </div>
+              </div>
+              <div class="space-y-4 pt-4 border-t border-white/10">
+                <h4 class="text-sm font-semibold text-gray-300 mb-2">Completion by Prayer</h4>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-400 flex items-center gap-1"
+                      ><span class="material-symbols-outlined text-[14px]">wb_twilight</span>
+                      Bomdod</span
+                    >
+                    <span class="text-white">45%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-400 flex items-center gap-1"
+                      ><span class="material-symbols-outlined text-[14px]">light_mode</span>
+                      Peshin</span
+                    >
+                    <span class="text-white">60%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-400 flex items-center gap-1"
+                      ><span class="material-symbols-outlined text-[14px]">wb_sunny</span> Asr</span
+                    >
+                    <span class="text-white">20%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 20%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-400 flex items-center gap-1"
+                      ><span class="material-symbols-outlined text-[14px]">nights_stay</span>
+                      Shom</span
+                    >
+                    <span class="text-white">15%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 15%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-400 flex items-center gap-1"
+                      ><span class="material-symbols-outlined text-[14px]">bedtime</span>
+                      Xufton</span
+                    >
+                    <span class="text-white">35%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 35%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-gray-400 flex items-center gap-1"
+                      ><span class="material-symbols-outlined text-[14px]">star</span> Vitr</span
+                    >
+                    <span class="text-white">10%</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 10%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </BaseBox>
+        </div>
+      </div>
     </div>
 
     <!-- Prayer Details Modal -->
@@ -239,10 +369,9 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
       v-model="isModalVisible"
       :confirm-loading="isPendingComplete"
       :title="selectedPrayer ? `${selectedPrayer.prayerType.name_uz} namozi` : ''"
-      @ok="handleModalOk"
-      @cancel="handleModalCancel"
       :okText="selectedPrayer?.isCompleted ? 'O\'qilmagan qilish' : 'O\'qilgan qilish'"
       cancelText="Yopish"
+      :footer="true"
       centered
     >
       <div v-if="selectedPrayer" class="py-4 flex flex-col gap-4">
@@ -285,8 +414,14 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
           show-icon
         />
       </div>
+      <div class="btns flex items-center gap-2 justify-end" v-if="!selectedPrayer?.isCompleted">
+        <BaseButton @click="isModalVisible = false">Bekor qilish</BaseButton>
+        <BaseButton @click="handleCompleteClick" :loading="isPendingComplete" type="primary"
+          >O'qilgan qilish</BaseButton
+        >
+      </div>
     </BaseModal>
-  </div>
+  </BaseSpin>
 </template>
 
 <style scoped>

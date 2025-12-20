@@ -4,7 +4,7 @@ import { Modal } from 'ant-design-vue'
 import { type ModalProps } from 'ant-design-vue/es/modal/Modal'
 const model = defineModel<boolean>()
 const attrs = useAttrs()
-const { closable = true, mask = true, maskClosable = true } = defineProps<ModalProps>()
+const { closable = true, mask = true, maskClosable = true,footer=null } = defineProps<ModalProps>()
 const emit = defineEmits(['cancel'])
 </script>
 <template>
@@ -19,8 +19,7 @@ const emit = defineEmits(['cancel'])
     :closeIcon
     :confirmLoading
     :destroyOnClose
-
-    :footer="false"
+    :footer
     :forceRender
     :getContainer
     :mask
@@ -34,7 +33,7 @@ const emit = defineEmits(['cancel'])
     :wrapClassName
     :zIndex
     v-model:open="model"
-    @cancel="(e) => emit('cancel',e)"
+    @cancel="(e) => emit('cancel', e)"
   >
     <slot></slot>
   </Modal>

@@ -27,22 +27,24 @@ export default defineConfigWithVueTs(
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
   },
-
+  {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
   {
     ...pluginCypress.configs.recommended,
-    files: [
-      'cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}',
-      'cypress/support/**/*.{js,ts,jsx,tsx}'
-    ],
+    files: ['cypress/e2e/**/*.{cy,spec}.{js,ts,jsx,tsx}', 'cypress/support/**/*.{js,ts,jsx,tsx}'],
   },
   {
-    name : 'disable-multi-word-component-names',
-    files : [
-      'src/layouts/**/*.vue', 'src/views/**/*.vue'
-    ],
-    rules : {
-      'vue/multi-word-component-names': 'off'
-    }
+    name: 'disable-multi-word-component-names',
+    files: ['src/layouts/**/*.vue', 'src/views/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
   },
   skipFormatting,
+  { settings: {} },
 )
