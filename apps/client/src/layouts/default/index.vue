@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMenuItemsList } from './composables/useMenuItemsList'
 import { useAuth } from '@/composables/useAuth'
-const { user } = useAuth()
+const { user,isPending } = useAuth()
 const router = useRouter()
 const { menuItemsList } = useMenuItemsList()
 const isExpanded = ref(true)
@@ -161,7 +161,7 @@ router.beforeEach(() => {
     </aside>
 
     <!-- Main Content -->
-    <main
+    <main v-if="!isPending"
       :class="[
         'w-full 2xl:px-12 p-6 transition-all duration-300 overflow-hidden relative',
         isExpanded ? 'ml-80' : 'ml-20',

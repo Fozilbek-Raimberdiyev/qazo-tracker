@@ -10,7 +10,7 @@ import {
   DescriptionsItem,
 } from 'ant-design-vue'
 import BaseTab from '@/components/BaseTab/BaseTab.vue'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import BaseTabItem from '@/components/BaseTab/BaseTabItem.vue'
 import Forest from '../components/Forest.vue'
 import type { Dayjs } from 'dayjs'
@@ -22,15 +22,48 @@ import { useList } from '../composables/useList'
 import { usePrayerCompleteMutation } from '../composables/usePrayerCompleteMutation'
 import { hexToRgba } from '@/utils/color.util'
 import BaseModal from '@/components/BaseModal/BaseModal.vue'
+import { useUserStore } from '@/stores/user.store'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import BaseSpin from '@/components/BaseSpin/BaseSpin.vue'
+import type { Prayer } from '@/types/prayer.types'
+import { storeToRefs } from 'pinia'
+const { user } = storeToRefs(useUserStore())
 
 // Dayjs konfiguratsiyasi
 dayjs.extend(weekday)
 dayjs.extend(localeData)
-dayjs.locale('uz-latn') // O'zbek tilini o'rnatish
+dayjs.locale('uz-latn')
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
 dayjs.Ls['uz-latn'] ? (dayjs.Ls['uz-latn'].weekStart = 1) : undefined
+
+const maxPrayerDate = computed(() => {
+  return user.value?.maxPrayerDate
+})
+
+const minPrayerDate = computed(() => {
+  return user.value?.minPrayerDate
+})
+
+// **YANGI: disabledDate funksiyasi qo'shildi**
+const disabledDate = (current: Dayjs) => {
+  if (!minPrayerDate.value || !maxPrayerDate.value) {
+    return false
+  }
+
+  const min = dayjs(minPrayerDate.value).startOf('day')
+  const max = dayjs(maxPrayerDate.value).startOf('day')
+
+  // minPrayerDate dan oldingi yoki maxPrayerDate dan keyingi sanalarni disable qilish
+  return current.isBefore(min, 'day') || current.isAfter(max, 'day')
+}
+
+// validRange prop uchun
+const validRange = computed(() => {
+  if (!minPrayerDate.value || !maxPrayerDate.value) {
+    return undefined
+  }
+  return [dayjs(minPrayerDate.value), dayjs(maxPrayerDate.value)] as [Dayjs, Dayjs]
+})
 
 // Ant Design Calendar uchun o'zbek locale
 const uzbekLocale = {
@@ -97,35 +130,7 @@ const uzbekLocale = {
   monthFormat: 'YYYY-MM',
 }
 
-// Dayjs locale sozlamalari (agar kerak bo'lsa qo'shimcha sozlash)
-// if (dayjs.Ls['uz-latn']) {
-//   dayjs.Ls['uz-latn'].weekdays = ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba']
-//   dayjs.Ls['uz-latn'].weekdaysShort = ['Yakshanba', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan']
-//   dayjs.Ls['uz-latn'].weekdaysMin = ['Ya', 'Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha']
-//   dayjs.Ls['uz-latn'].months = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr']
-//   dayjs.Ls['uz-latn'].monthsShort = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek']
-// }
-
 const { mutateAsync: completePrayer, isPending: isPendingComplete } = usePrayerCompleteMutation()
-
-// Types
-interface PrayerType {
-  name_uz: string
-  name_ru: string
-  name_en: string
-  name_ar: string
-  icon: string
-  order_no: number
-  id: string
-}
-interface Prayer {
-  id: string
-  date: string
-  prayerType: PrayerType
-  isCompleted: boolean
-  createdAt: string
-  userId: string
-}
 
 const { data, isPending, date } = useList()
 const currentTab = ref('calendar')
@@ -168,9 +173,9 @@ function handleCompleteClick() {
 function getPrayersForDate(date: Dayjs): Prayer[] {
   if (!data.value) return []
   const dateStr = date.format('YYYY-MM-DD')
-  return (data.value as Prayer[])
+  return (data.value.prayers as Prayer[])
     .filter((prayer: Prayer) => prayer.date === dateStr)
-    .sort((a: Prayer, b: Prayer) => a.prayerType.order_no - b.prayerType.order_no)
+    .sort((a: Prayer, b: Prayer) => a.prayerType?.order_no - b.prayerType?.order_no)
 }
 </script>
 
@@ -189,11 +194,30 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
           <BaseTabItem tab-key="calendar" label="Kalendar">
             <Teleport v-if="isLoaded" to=".main-content">
               <BaseBox class="custom-calendar">
+                <div class="flex items-center justify-between gap-2">
+                  <BaseButton
+                    :disabled="
+                      date.toDate().getTime() === new Date(user?.minPrayerDate as string).getTime()
+                    "
+                    @click="handlePanelChange(dayjs(date).subtract(1, 'month'))"
+                    >Avvalgi oy</BaseButton
+                  >
+                  <BaseButton
+                    :disabled="
+                      date.toDate().getTime() >= new Date(user?.maxPrayerDate as string).getTime()
+                    "
+                    @click="handlePanelChange(dayjs(date).add(1, 'month'))"
+                    >Keyingi oy</BaseButton
+                  >
+                </div>
+
                 <Calendar
                   @select="handleSelect"
                   @panelChange="handlePanelChange"
                   :value="date"
                   :locale="uzbekLocale as any"
+                  :disabledDate="disabledDate"
+                  :validRange="validRange"
                 >
                   <template #dateCellRender="{ current }">
                     <div class="events">
@@ -201,13 +225,13 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
                         <div
                           class="event-item flex items-center gap-2 px-2 py-1! rounded bg-primary/10 cursor-pointer group/item transition-colors border-l-2"
                           :class="[prayer.isCompleted ? 'completed' : 'pending']"
-                          :title="`${prayer.prayerType.name_uz} - ${prayer.isCompleted ? 'O\'qilgan' : 'O\'qilmagan'}`"
+                          :title="`${prayer.prayerType?.name_uz} - ${prayer.isCompleted ? 'O\'qilgan' : 'O\'qilmagan'}`"
                           @click="showPrayerDetails(prayer, $event)"
                         >
                           <span class="material-symbols-outlined">{{
-                            prayer.prayerType.icon
+                            prayer.prayerType?.icon
                           }}</span>
-                          <span class="event-name">{{ prayer.prayerType.name_uz }}</span>
+                          <span class="event-name">{{ prayer.prayerType?.name_uz }}</span>
                         </div>
                       </template>
                     </div>
@@ -228,11 +252,14 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
     </div>
 
     <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-4">
-      <div class="lg:col-span-3 main-content"></div>
-      <div class="lg:col-span-1">
+      <div
+        class="main-content"
+        :class="[data?.prayers.length ? 'lg:col-span-3' : 'lg:col-span-4']"
+      ></div>
+      <div class="lg:col-span-1" v-if="data?.prayers.length">
         <div class="space-y-6">
           <BaseBox>
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white">This Month's Progress</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Oylik samaradorlik</h3>
             <div class="mt-4 flex flex-col gap-6">
               <div class="flex items-center justify-between">
                 <div class="relative size-24">
@@ -264,97 +291,55 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
                   <div
                     class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2 text-center"
                   >
-                    <span class="text-xl font-bold text-gray-500 dark:text-white">31%</span>
+                    <span class="text-xl font-bold text-gray-500 dark:text-white"
+                      >{{
+                        Math.floor(
+                          (Number(data?.completedCount) / Number(data?.totalPrayers)) * 100,
+                        )
+                      }}%</span
+                    >
                   </div>
                 </div>
                 <div class="flex flex-col gap-2">
                   <div class="flex items-center gap-2">
                     <span class="size-3 rounded-full bg-primary"></span>
                     <span class="text-sm text-gray-500"
-                      >Completed: <span class="font-bold text-white">57</span></span
+                      >O'qilgan:
+                      <span class="font-bold text-white">{{ data?.completedCount }}</span></span
                     >
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="size-3 rounded-full bg-red-500"></span>
                     <span class="text-sm text-gray-500"
-                      >Pending: <span class="font-bold text-white">123</span></span
+                      >O'qilmagan:
+                      <span class="font-bold text-white">{{ data?.uncompletedCount }}</span></span
                     >
                   </div>
                   <p class="text-xs text-gray-500 mt-1">
-                    Total Prayers: <span class="text-gray-300">180</span>
+                    Jami namozlar: <span class="text-gray-300">{{ data?.totalPrayers }}</span>
                   </p>
                 </div>
               </div>
               <div class="space-y-4 pt-4 border-t border-white/10">
-                <h4 class="text-sm font-semibold text-gray-300 mb-2">Completion by Prayer</h4>
-                <div>
+                <h4 class="text-sm font-semibold mb-2">Namoz turlari</h4>
+                <div v-for="(item, index) in data?.countsByType" :key="index">
                   <div class="flex justify-between text-xs mb-1">
                     <span class="text-gray-400 flex items-center gap-1"
-                      ><span class="material-symbols-outlined text-[14px]">wb_twilight</span>
-                      Bomdod</span
+                      ><span class="material-symbols-outlined text-[14px]">{{
+                        item.prayerType.icon
+                      }}</span>
+                      {{ item.prayerType.name_uz }}
+                    </span>
+
+                    <span class="dark:text-white"
+                      >{{ Math.floor((item.completed / item.total) * 100) }} %</span
                     >
-                    <span class="text-white">45%</span>
                   </div>
-                  <div class="w-full bg-gray-700 rounded-full h-1.5">
-                    <div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-xs mb-1">
-                    <span class="text-gray-400 flex items-center gap-1"
-                      ><span class="material-symbols-outlined text-[14px]">light_mode</span>
-                      Peshin</span
-                    >
-                    <span class="text-white">60%</span>
-                  </div>
-                  <div class="w-full bg-gray-700 rounded-full h-1.5">
-                    <div class="bg-primary h-1.5 rounded-full" style="width: 60%"></div>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-xs mb-1">
-                    <span class="text-gray-400 flex items-center gap-1"
-                      ><span class="material-symbols-outlined text-[14px]">wb_sunny</span> Asr</span
-                    >
-                    <span class="text-white">20%</span>
-                  </div>
-                  <div class="w-full bg-gray-700 rounded-full h-1.5">
-                    <div class="bg-primary h-1.5 rounded-full" style="width: 20%"></div>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-xs mb-1">
-                    <span class="text-gray-400 flex items-center gap-1"
-                      ><span class="material-symbols-outlined text-[14px]">nights_stay</span>
-                      Shom</span
-                    >
-                    <span class="text-white">15%</span>
-                  </div>
-                  <div class="w-full bg-gray-700 rounded-full h-1.5">
-                    <div class="bg-primary h-1.5 rounded-full" style="width: 15%"></div>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-xs mb-1">
-                    <span class="text-gray-400 flex items-center gap-1"
-                      ><span class="material-symbols-outlined text-[14px]">bedtime</span>
-                      Xufton</span
-                    >
-                    <span class="text-white">35%</span>
-                  </div>
-                  <div class="w-full bg-gray-700 rounded-full h-1.5">
-                    <div class="bg-primary h-1.5 rounded-full" style="width: 35%"></div>
-                  </div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-xs mb-1">
-                    <span class="text-gray-400 flex items-center gap-1"
-                      ><span class="material-symbols-outlined text-[14px]">star</span> Vitr</span
-                    >
-                    <span class="text-white">10%</span>
-                  </div>
-                  <div class="w-full bg-gray-700 rounded-full h-1.5">
-                    <div class="bg-primary h-1.5 rounded-full" style="width: 10%"></div>
+                  <div class="w-full dark:bg-gray-700 bg-gray-200 rounded-full h-1.5">
+                    <div
+                      class="bg-primary h-1.5 rounded-full"
+                      :style="{ width: `${Math.floor((item.completed / item.total) * 100)}%` }"
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -504,5 +489,21 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
 .custom-calendar :deep(.ant-picker-calendar-date-content) {
   height: auto !important;
   min-height: 50px;
+}
+
+/* Disabled sanalar uchun stil */
+.custom-calendar :deep(.ant-picker-cell-disabled) {
+  pointer-events: none;
+}
+
+.custom-calendar :deep(.ant-picker-cell-disabled .ant-picker-cell-inner) {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+  cursor: not-allowed !important;
+}
+
+.custom-calendar :deep(.ant-picker-cell-disabled .events) {
+  opacity: 0.3;
+  pointer-events: none;
 }
 </style>

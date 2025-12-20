@@ -5,20 +5,22 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { PrayerTypes } from '../../prayerTypes/entities/prayerTypes.entity';
 
 @Entity('qazo_prayers')
+@Unique(['userId', 'date', 'prayerTypeId'])
 export class QazoPrayer {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ApiProperty({ example: '2025-12-18' })
-  @Column()
-  date: string; // ISO format: "YYYY-MM-DD"
+  @Column({ type: 'date', nullable: true })
+  date: Date; // ISO format: "YYYY-MM-DD"
 
   @ApiProperty({})
   @ManyToOne(() => PrayerTypes, { eager: true })

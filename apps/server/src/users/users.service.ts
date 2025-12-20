@@ -35,13 +35,23 @@ export class UsersService {
       where: { id },
       relations: ['providers'],
     });
-    const count = await this.qazoRepo.count({ where: { userId: id } });
+    const stats = await this.qazoRepo
+      .createQueryBuilder('prayer')
+      .select([
+        'COUNT(*) as count',
+        'MAX(prayer.date) as maxDate',
+        'MIN(prayer.date) as minDate',
+      ])
+      .where('prayer.userId = :userId', { userId: id })
+      .getRawOne();
 
     return {
       ...user,
       // @ts-expect-error
-      qazoPrayersCount: count,
-      hasQazoPrayers: count > 0,
+      qazoPrayersCount: stats.count,
+      hasQazoPrayers: stats.count > 0,
+      maxPrayerDate: stats?.maxdate || null,
+      minPrayerDate: stats?.mindate || null,
     };
   }
 

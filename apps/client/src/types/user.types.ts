@@ -23,4 +23,6 @@ export interface UserProfile {
   googleRaw: GoogleRaw
   hasQazoPrayers: boolean
   qazoPrayersCount: number
+  maxPrayerDate: string | null
+  minPrayerDate: string | null
 }

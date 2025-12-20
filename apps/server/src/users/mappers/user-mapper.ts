@@ -3,6 +3,7 @@ import { UserResDto } from '../dto/user.dto';
 
 export const toUserResDto = (user: UserResDto): UserResDto =>
   new UserResDto({
+    ...user,
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
@@ -15,4 +16,5 @@ export const toUserResDto = (user: UserResDto): UserResDto =>
     googleRaw: user.googleRaw,
     hasQazoPrayers: user.hasQazoPrayers,
     qazoPrayersCount: user.qazoPrayersCount,
+
   });
