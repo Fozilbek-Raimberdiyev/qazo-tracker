@@ -11,6 +11,7 @@ import { User } from '../users/entities/user.entity';
 import { UserProvider } from '../users/entities/user-provider.entity';
 import { UsersService } from '../users/users.service';
 import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
+import { QazoFasting } from 'src/fasting/entities/fasting.entity';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -18,7 +19,7 @@ import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '7d' },
     }),
-    TypeOrmModule.forFeature([User, UserProvider, QazoPrayer]),
+    TypeOrmModule.forFeature([User, UserProvider, QazoPrayer, QazoFasting]),
   ],
   controllers: [AuthController],
   providers: [AuthService, UsersService, JwtStrategy, GoogleStrategy],

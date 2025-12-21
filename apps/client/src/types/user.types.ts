@@ -25,4 +25,8 @@ export interface UserProfile {
   qazoPrayersCount: number
   maxPrayerDate: string | null
   minPrayerDate: string | null
+  hasQazoFasting: boolean
+  qazoFastingCount: number
+  maxFastingDate: string | null
+  minFastingDate: string | null
 }

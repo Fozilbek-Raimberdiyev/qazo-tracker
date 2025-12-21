@@ -2,15 +2,15 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMenuItemsList } from './composables/useMenuItemsList'
+import { useLocalStorage } from '@vueuse/core'
 import { useAuth } from '@/composables/useAuth'
-const { user,isPending } = useAuth()
+const { user, isPending } = useAuth()
 const router = useRouter()
 const { menuItemsList } = useMenuItemsList()
-const isExpanded = ref(true)
 const originPosition = ref({ x: 0, y: 0 })
-
+const isExpanded = useLocalStorage('isExpanded', true)
 // Transition speed control (in seconds)
-const transitionSpeed = ref(1.3) // Adjust this value to change animation speed
+const transitionSpeed = ref(0.5) // Adjust this value to change animation speed
 
 // Available transition effects:
 // 'circle-expand' - Circle expands from top center (RECOMMENDED)
@@ -19,7 +19,7 @@ const transitionSpeed = ref(1.3) // Adjust this value to change animation speed
 // 'flip-card' - 3D card flip effect
 // 'blur-fade' - Fade with blur effect
 // 'slide-vertical' - Slide from bottom
-const defaultTransition = ref('circle-expand')
+const defaultTransition = ref('blue-fade')
 
 const toggleSidebar = () => {
   isExpanded.value = !isExpanded.value
@@ -56,9 +56,7 @@ router.beforeEach(() => {
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen font-display bg-background-light dark:bg-background-dark overflow-x-hidden"
-  >
+  <div class="flex min-h-screen font-display bg-background-light dark:bg-background-dark">
     <!-- Side Navigation Bar -->
     <aside
       :class="[
@@ -116,7 +114,11 @@ router.beforeEach(() => {
             !isExpanded && 'justify-center',
           ]"
         >
+          <span v-if="!user?.picture" class="material-symbols-outlined text-3xl!">
+            account_circle
+          </span>
           <div
+            v-else
             class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
             data-alt="User avatar image"
             :style="{ backgroundImage: `url(${user?.picture})` }"
@@ -161,7 +163,8 @@ router.beforeEach(() => {
     </aside>
 
     <!-- Main Content -->
-    <main v-if="!isPending"
+    <main
+      v-if="!isPending"
       :class="[
         'w-full 2xl:px-12 p-6 transition-all duration-300 overflow-hidden relative',
         isExpanded ? 'ml-80' : 'ml-20',

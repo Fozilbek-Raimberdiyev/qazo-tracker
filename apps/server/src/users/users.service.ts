@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { UserProvider } from './entities/user-provider.entity';
 import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
+import { QazoFasting } from 'src/fasting/entities/fasting.entity';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,8 @@ export class UsersService {
     private userProviderRepository: Repository<UserProvider>,
     @InjectRepository(QazoPrayer)
     private qazoRepo: Repository<QazoPrayer>,
+    @InjectRepository(QazoFasting)
+    private fastingRepo: Repository<QazoFasting>,
   ) {}
 
   /**
@@ -35,7 +38,7 @@ export class UsersService {
       where: { id },
       relations: ['providers'],
     });
-    const stats = await this.qazoRepo
+    const prayerStats = await this.qazoRepo
       .createQueryBuilder('prayer')
       .select([
         'COUNT(*) as count',
@@ -44,14 +47,26 @@ export class UsersService {
       ])
       .where('prayer.userId = :userId', { userId: id })
       .getRawOne();
-
+    const fastingStats = await this.fastingRepo
+      .createQueryBuilder('fasting')
+      .select([
+        'COUNT(*) as count',
+        'MAX(fasting.date) as maxDate',
+        'MIN(fasting.date) as minDate',
+      ])
+      .where('fasting.user_id = :userId', { userId: id }) // nomi bir xil
+      .getRawOne();
     return {
       ...user,
       // @ts-expect-error
-      qazoPrayersCount: stats.count,
-      hasQazoPrayers: stats.count > 0,
-      maxPrayerDate: stats?.maxdate || null,
-      minPrayerDate: stats?.mindate || null,
+      qazoPrayersCount: prayerStats.count,
+      qazoFastingCount: fastingStats.count,
+      hasQazoPrayers: prayerStats.count > 0,
+      maxPrayerDate: prayerStats?.maxdate || null,
+      minPrayerDate: prayerStats?.mindate || null,
+      hasQazoFasting: fastingStats.count > 0,
+      maxFastingDate: fastingStats?.maxdate || null,
+      minFastingDate: fastingStats?.mindate || null,
     };
   }
 

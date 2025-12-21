@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import BaseBox from '@/components/BaseBox.vue'
+// import moment from "moment-hijri"
+import confetti from '@hiseb/confetti'
+
+import dayjs from 'dayjs'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { CircleProgressBar } from 'circle-progress.vue'
+import { useThemeStore } from '@/stores/theme'
 import {
   TypographyTitle,
   TypographyText,
@@ -10,11 +18,10 @@ import {
   DescriptionsItem,
 } from 'ant-design-vue'
 import BaseTab from '@/components/BaseTab/BaseTab.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, h, onMounted, ref } from 'vue'
 import BaseTabItem from '@/components/BaseTab/BaseTabItem.vue'
 import Forest from '../components/Forest.vue'
 import type { Dayjs } from 'dayjs'
-import dayjs from 'dayjs'
 import weekday from 'dayjs/plugin/weekday'
 import localeData from 'dayjs/plugin/localeData'
 import 'dayjs/locale/uz-latn' // O'zbek tili uchun locale
@@ -23,12 +30,14 @@ import { usePrayerCompleteMutation } from '../composables/usePrayerCompleteMutat
 import { hexToRgba } from '@/utils/color.util'
 import BaseModal from '@/components/BaseModal/BaseModal.vue'
 import { useUserStore } from '@/stores/user.store'
+import { useCalendarData } from '../composables/useCalendarData'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import BaseSpin from '@/components/BaseSpin/BaseSpin.vue'
 import type { Prayer } from '@/types/prayer.types'
 import { storeToRefs } from 'pinia'
 const { user } = storeToRefs(useUserStore())
-
+const { uzbekLocale } = useCalendarData()
+const { primaryColor } = storeToRefs(useThemeStore())
 // Dayjs konfiguratsiyasi
 dayjs.extend(weekday)
 dayjs.extend(localeData)
@@ -65,71 +74,6 @@ const validRange = computed(() => {
   return [dayjs(minPrayerDate.value), dayjs(maxPrayerDate.value)] as [Dayjs, Dayjs]
 })
 
-// Ant Design Calendar uchun o'zbek locale
-const uzbekLocale = {
-  lang: {
-    locale: 'uz',
-    placeholder: 'Sanani tanlang',
-    rangePlaceholder: ['Boshlanish', 'Tugash'],
-    today: 'Bugun',
-    now: 'Hozir',
-    backToToday: 'Bugunga qaytish',
-    ok: 'OK',
-    clear: 'Tozalash',
-    month: 'Oy',
-    year: 'Yil',
-    timeSelect: 'Vaqtni tanlash',
-    dateSelect: 'Sanani tanlash',
-    monthSelect: 'Oyni tanlang',
-    yearSelect: 'Yilni tanlang',
-    decadeSelect: "O'n yillikni tanlang",
-    yearFormat: 'YYYY',
-    dateFormat: 'DD.MM.YYYY',
-    dayFormat: 'D',
-    dateTimeFormat: 'DD.MM.YYYY HH:mm:ss',
-    monthFormat: 'MMMM',
-    monthBeforeYear: true,
-    previousMonth: 'Oldingi oy (PageUp)',
-    nextMonth: 'Keyingi oy (PageDown)',
-    previousYear: 'Oldingi yil (Control + left)',
-    nextYear: 'Keyingi yil (Control + right)',
-    previousDecade: "Oldingi o'n yillik",
-    nextDecade: "Keyingi o'n yillik",
-    previousCentury: 'Oldingi asr',
-    nextCentury: 'Keyingi asr',
-    shortWeekDays: [
-      'Yakshanba',
-      'Dushanba',
-      'Seshanba',
-      'Chorshanba',
-      'Payshanba',
-      'Juma',
-      'Shanba',
-    ],
-    shortMonths: [
-      'Yanvar',
-      'Fevral',
-      'Mart',
-      'Aprel',
-      'May',
-      'Iyun',
-      'Iyul',
-      'Avgust',
-      'Sentabr',
-      'Oktabr',
-      'Noyabr',
-      'Dekabr',
-    ],
-  },
-  timePickerLocale: {
-    placeholder: 'Vaqtni tanlang',
-  },
-  dateFormat: 'DD.MM.YYYY',
-  dateTimeFormat: 'DD.MM.YYYY HH:mm:ss',
-  weekFormat: 'YYYY-wo',
-  monthFormat: 'YYYY-MM',
-}
-
 const { mutateAsync: completePrayer, isPending: isPendingComplete } = usePrayerCompleteMutation()
 
 const { data, isPending, date } = useList()
@@ -163,9 +107,14 @@ function showPrayerDetails(prayer: Prayer, event: Event) {
   isModalVisible.value = true
 }
 
-function handleCompleteClick() {
+async function handleCompleteClick() {
   if (selectedPrayer.value) {
-    completePrayer(selectedPrayer.value.id)
+    await completePrayer(selectedPrayer.value.id)
+    setTimeout(() => {
+      if (monthlyProgress.value == 100) {
+        confetti({ count: 1000, size: 1, velocity: 500 })
+      }
+    }, 100)
   }
   isModalVisible.value = false
 }
@@ -177,10 +126,16 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
     .filter((prayer: Prayer) => prayer.date === dateStr)
     .sort((a: Prayer, b: Prayer) => a.prayerType?.order_no - b.prayerType?.order_no)
 }
+const monthlyProgress = computed(() => {
+  if (!data.value) return 0
+  return Math.floor((Number(data.value?.completedCount) / Number(data.value?.totalPrayers)) * 100)
+})
+
 </script>
 
 <template>
   <BaseSpin :spinning="isPending">
+
     <!-- PageHeading -->
     <div class="flex items-center justify-between gap-4">
       <div class="flex flex-col gap-2">
@@ -194,15 +149,28 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
           <BaseTabItem tab-key="calendar" label="Kalendar">
             <Teleport v-if="isLoaded" to=".main-content">
               <BaseBox class="custom-calendar">
-                <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center justify-between gap-2 mb-2">
                   <BaseButton
+                    :icon="
+                      h('span', { class: 'material-symbols-outlined text-base!' }, 'arrow_back_ios')
+                    "
                     :disabled="
-                      date.toDate().getTime() === new Date(user?.minPrayerDate as string).getTime()
+                      date.toDate().getTime() <= new Date(user?.minPrayerDate as string).getTime()
                     "
                     @click="handlePanelChange(dayjs(date).subtract(1, 'month'))"
                     >Avvalgi oy</BaseButton
                   >
+                  <span class="text-lg">
+                    {{ dayjs(date).format('MMMM YYYY') }}
+                  </span>
                   <BaseButton
+                    :icon="
+                      h(
+                        'span',
+                        { class: 'material-symbols-outlined text-base!' },
+                        'arrow_forward_ios',
+                      )
+                    "
                     :disabled="
                       date.toDate().getTime() >= new Date(user?.maxPrayerDate as string).getTime()
                     "
@@ -251,54 +219,24 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
       </div>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-4">
-      <div
-        class="main-content"
-        :class="[data?.prayers.length ? 'lg:col-span-3' : 'lg:col-span-4']"
-      ></div>
-      <div class="lg:col-span-1" v-if="data?.prayers.length">
+    <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-4 relative">
+      <div class="main-content lg:col-span-3"></div>
+      <div class="lg:col-span-1 sticky top-0 h-full">
         <div class="space-y-6">
           <BaseBox>
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">Oylik samaradorlik</h3>
             <div class="mt-4 flex flex-col gap-6">
               <div class="flex items-center justify-between">
-                <div class="relative size-24">
-                  <svg
-                    class="size-full -rotate-90"
-                    viewBox="0 0 36 36"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      class="text-gray-700"
-                      d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></path>
-                    <path
-                      class="text-primary"
-                      d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-dasharray="31, 100"
-                      stroke-width="4"
-                    ></path>
-                  </svg>
-                  <div
-                    class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2 text-center"
+                <div class="">
+                  <CircleProgressBar
+                    :max="100"
+                    :color-unfilled="primaryColor"
+                    :value="monthlyProgress"
                   >
                     <span class="text-xl font-bold text-gray-500 dark:text-white"
-                      >{{
-                        Math.floor(
-                          (Number(data?.completedCount) / Number(data?.totalPrayers)) * 100,
-                        )
-                      }}%</span
+                      >{{ monthlyProgress }}%</span
                     >
-                  </div>
+                  </CircleProgressBar>
                 </div>
                 <div class="flex flex-col gap-2">
                   <div class="flex items-center gap-2">
@@ -316,7 +254,7 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
                     >
                   </div>
                   <p class="text-xs text-gray-500 mt-1">
-                    Jami namozlar: <span class="text-gray-300">{{ data?.totalPrayers }}</span>
+                    Jami namozlar: <span class="">{{ data?.totalPrayers }}</span>
                   </p>
                 </div>
               </div>
@@ -421,26 +359,6 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
   }
 }
 
-.grid > div {
-  animation: slideIn 0.3s ease-out forwards;
-}
-
-.grid > div:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.grid > div:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.grid > div:nth-child(3) {
-  animation-delay: 0.15s;
-}
-.grid > div:nth-child(4) {
-  animation-delay: 0.2s;
-}
-.grid > div:nth-child(5) {
-  animation-delay: 0.25s;
-}
-
 .events {
   display: flex;
   flex-direction: column;
@@ -450,21 +368,8 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
   overflow: hidden;
 }
 
-.event-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-
 .event-item:hover {
-  transform: translateX(2px);
+  transform: translateX(4px);
 }
 
 .event-item.completed {
@@ -477,13 +382,6 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
   background: v-bind(hexToRgba('#d1d5db', 0.1));
   color: #6b7280;
   border-left: 4px solid #d1d5db;
-}
-
-.space-y-3 > * + * {
-  margin-top: 0.75rem;
-}
-.space-y-4 > * + * {
-  margin-top: 1rem;
 }
 
 .custom-calendar :deep(.ant-picker-calendar-date-content) {
@@ -505,5 +403,33 @@ function getPrayersForDate(date: Dayjs): Prayer[] {
 .custom-calendar :deep(.ant-picker-cell-disabled .events) {
   opacity: 0.3;
   pointer-events: none;
+}
+
+:global(.custom-calendar .ant-picker-cell-disabled) {
+  visibility: hidden;
+}
+
+:global(
+  .custom-calendar
+    :where(.css-dev-only-do-not-override-16n3tjf).ant-picker-calendar.ant-picker-calendar-full
+    .ant-picker-cell-in-view.ant-picker-cell-selected
+    .ant-picker-calendar-date,
+  :where(.css-dev-only-do-not-override-16n3tjf).ant-picker-calendar.ant-picker-calendar-full
+    .ant-picker-cell-in-view.ant-picker-cell-selected
+    .ant-picker-calendar-date-today
+) {
+  background: none;
+}
+
+:global(
+  .custom-calendar
+    :where(.css-dev-only-do-not-override-16n3tjf).ant-picker-calendar.ant-picker-calendar-full
+    .ant-picker-cell-in-view.ant-picker-cell-selected
+    .ant-picker-calendar-date,
+  :where(.css-dev-only-do-not-override-16n3tjf).ant-picker-calendar.ant-picker-calendar-full
+    .ant-picker-cell-in-view.ant-picker-cell-selected
+    .ant-picker-calendar-date-today
+) {
+  background: none;
 }
 </style>

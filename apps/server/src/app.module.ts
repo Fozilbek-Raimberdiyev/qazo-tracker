@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrayerModule } from './prayer/qazo.module';
 import { PrayerTypesModule } from './prayerTypes/prayerTypes.module';
+import { QazoFastingModule } from './fasting/fasting.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PrayerTypesModule } from './prayerTypes/prayerTypes.module';
     AuthModule,
     PrayerModule,
     PrayerTypesModule,
+    QazoFastingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3,10 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QazoPrayer } from './entities/prayer.entity';
-import { User } from '../users/entities/user.entity';
-import { PrayerTypes } from 'src/prayerTypes/entities/prayerTypes.entity';
-
-const PRAYER_NAMES = ['bomdod', 'peshin', 'asr', 'shom', 'xufton'] as const;
 
 @Injectable()
 export class PrayerService {
@@ -59,15 +55,15 @@ export class PrayerService {
   //   return qb.getMany();
   // }
 
-async getUserPrayers(userId: string, fromDate?: string, toDate?: string) {
-  const params: (string | null)[] = [userId];
-  if (fromDate) params.push(fromDate);
-  else params.push(null);
-  
-  if (toDate) params.push(toDate);
-  else params.push(null);
+  async getUserPrayers(userId: string, fromDate?: string, toDate?: string) {
+    const params: (string | null)[] = [userId];
+    if (fromDate) params.push(fromDate);
+    else params.push(null);
 
-  const sql = `
+    if (toDate) params.push(toDate);
+    else params.push(null);
+
+    const sql = `
     SELECT
       -- 1. Barcha eventlar (JSON array) - prayerType nested
       COALESCE(
@@ -149,21 +145,21 @@ async getUserPrayers(userId: string, fromDate?: string, toDate?: string) {
       ) AS counts_by_type
     `;
 
-  const result = await this.qazoRepo.manager.query(sql, params);
-  const raw = result[0];
+    const result = await this.qazoRepo.manager.query(sql, params);
+    const raw = result[0];
 
-  return {
-    prayers: raw.prayers,
-    totalPrayers: raw.total_prayers,
-    completedCount: raw.completed_count,
-    uncompletedCount: raw.uncompleted_count,
-    countsByType: raw.counts_by_type.map((item: any) => ({
-      prayerType: item.prayer_type,
-      total: item.total,
-      completed: item.completed
-    }))
-  };
-}
+    return {
+      prayers: raw.prayers,
+      totalPrayers: raw.total_prayers,
+      completedCount: raw.completed_count,
+      uncompletedCount: raw.uncompleted_count,
+      countsByType: raw.counts_by_type.map((item: any) => ({
+        prayerType: item.prayer_type,
+        total: item.total,
+        completed: item.completed,
+      })),
+    };
+  }
 
   /**
    * Qazo namozini bajarilgan deb belgilash

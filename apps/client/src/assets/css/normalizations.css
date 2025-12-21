@@ -1,9 +1,9 @@
 .ant-picker-calendar {
-  @apply rounded-xl overflow-hidden p-6;
+  @apply rounded-xl  p-6;
 }
 
 .ant-picker-panel {
-  @apply rounded-xl overflow-hidden;
+  @apply rounded-xl ;
 }
 
 .ant-picker-cell-inner {

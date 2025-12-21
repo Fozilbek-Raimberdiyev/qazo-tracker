@@ -10,6 +10,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { UserProvider } from './user-provider.entity';
 import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
+import { QazoFasting } from 'src/fasting/entities/fasting.entity';
 
 @Entity('users')
 export class User {
@@ -61,4 +62,9 @@ export class User {
   @ApiProperty({ type: () => [QazoPrayer] })
   @OneToMany(() => QazoPrayer, (prayer) => prayer.user, { cascade: true })
   qazoPrayers: QazoPrayer[];
+  // fasting
+  @ApiProperty({ type: () => [QazoFasting] })
+  @OneToMany(() => QazoFasting, (fasting) => fasting.user, { cascade: true })
+  qazoFastings: QazoFasting[];
+
 }
