@@ -2,7 +2,7 @@
 import BaseBox from '@/components/BaseBox.vue'
 // import moment from "moment-hijri"
 import confetti from '@hiseb/confetti'
-
+import {useDownloadAsPdfAllPrayersMutation} from "../composables/useDownloadAsPdfAllPrayersMutation"
 import dayjs from 'dayjs'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -38,6 +38,7 @@ import { storeToRefs } from 'pinia'
 const { user } = storeToRefs(useUserStore())
 const { uzbekLocale } = useCalendarData()
 const { primaryColor } = storeToRefs(useThemeStore())
+const {isPending : isPendingDownload, mutateAsync: downloadPdf} = useDownloadAsPdfAllPrayersMutation()
 // Dayjs konfiguratsiyasi
 dayjs.extend(weekday)
 dayjs.extend(localeData)
@@ -143,6 +144,11 @@ const monthlyProgress = computed(() => {
         <TypographyText type="secondary">
           Qazo namozlaringizni ko'ring va ularni o'zgartiring
         </TypographyText>
+      </div>
+      <div>
+        <BaseButton :loading="isPendingDownload" @click="downloadPdf()" type="primary">
+          <span class="material-symbols-outlined">download</span>
+        </BaseButton>
       </div>
       <div class="flex justify-end">
         <BaseTab v-model="currentTab" :items="tabItems">

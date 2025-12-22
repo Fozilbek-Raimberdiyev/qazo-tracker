@@ -3,13 +3,40 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QazoPrayer } from './entities/prayer.entity';
-
+import { PdfService } from './pdf.service';
 @Injectable()
 export class PrayerService {
   constructor(
     @InjectRepository(QazoPrayer)
     private qazoRepo: Repository<QazoPrayer>,
+    private pdfService: PdfService,
   ) {}
+
+  async generatePrayerPdf(
+    userId: string,
+    userInfo?: { name: string; email: string },
+  ): Promise<Buffer> {
+    // Barcha namozlarni olish
+    const prayers = await this.qazoRepo.find({
+      where: { userId },
+      relations: ['prayerType'],
+      order: {
+        date: 'ASC',
+        prayerType: { order_no: 'ASC' },
+      },
+    });
+
+    if (!prayers || prayers.length === 0) {
+      throw new Error('Namozlar topilmadi');
+    }
+
+    // PDF yaratish
+    return await this.pdfService.generatePrayerTablePdf(
+      userId,
+      prayers,
+      userInfo,
+    );
+  }
 
   /**
    * fromDate va toDate oralig'ida 5 ta namoz event yaratadi
