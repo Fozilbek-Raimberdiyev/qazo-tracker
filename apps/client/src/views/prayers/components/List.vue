@@ -44,7 +44,6 @@ dayjs.extend(localeData)
 dayjs.locale('uz-latn')
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
 dayjs.Ls['uz-latn'] ? (dayjs.Ls['uz-latn'].weekStart = 1) : undefined
-
 const maxPrayerDate = computed(() => {
   return user.value?.maxPrayerDate
 })

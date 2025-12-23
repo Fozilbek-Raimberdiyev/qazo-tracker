@@ -12,7 +12,7 @@ export function useCompleteFastingMutation() {
     },
     onSuccess: () => {
       showSuccessMessage('Muvaffaqiyatli saqlandi')
-      queryClient.invalidateQueries({ queryKey: [queryKeys.fasting.list] })
+      queryClient.invalidateQueries({ queryKey: [ queryKeys.fasting.list] })
     },
   })
 

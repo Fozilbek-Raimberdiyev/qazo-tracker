@@ -33,42 +33,75 @@ export class UsersService {
   /**
    * ID bo'yicha foydalanuvchini olish
    */
-  async findOne(id: string): Promise<User | null> {
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: ['providers'],
-    });
-    const prayerStats = await this.qazoRepo
-      .createQueryBuilder('prayer')
-      .select([
-        'COUNT(*) as count',
-        'MAX(prayer.date) as maxDate',
-        'MIN(prayer.date) as minDate',
-      ])
-      .where('prayer.userId = :userId', { userId: id })
-      .getRawOne();
-    const fastingStats = await this.fastingRepo
-      .createQueryBuilder('fasting')
-      .select([
-        'COUNT(*) as count',
-        'MAX(fasting.date) as maxDate',
-        'MIN(fasting.date) as minDate',
-      ])
-      .where('fasting.user_id = :userId', { userId: id }) // nomi bir xil
-      .getRawOne();
-    return {
-      ...user,
-      // @ts-expect-error
-      qazoPrayersCount: prayerStats.count,
-      qazoFastingCount: fastingStats.count,
-      hasQazoPrayers: prayerStats.count > 0,
-      maxPrayerDate: prayerStats?.maxdate || null,
-      minPrayerDate: prayerStats?.mindate || null,
-      hasQazoFasting: fastingStats.count > 0,
-      maxFastingDate: fastingStats?.maxdate || null,
-      minFastingDate: fastingStats?.mindate || null,
-    };
-  }
+ async findOne(id: string): Promise<User | null> {
+  const user = await this.usersRepository.findOne({
+    where: { id },
+    relations: ['providers'],
+  });
+
+  // 1. Umumiy statistika (barcha yozuvlar, completed true/false farqi yo'q)
+  const prayerOverallStats = await this.qazoRepo
+    .createQueryBuilder('prayer')
+    .select([
+      'COUNT(*) AS count',
+      'MAX(prayer.date) AS maxDate',
+      'MIN(prayer.date) AS minDate',
+    ])
+    .where('prayer.userId = :userId', { userId: id })
+    .getRawOne();
+
+  // 2. Faqat qazo bo'lganlar statistikasi (isCompleted = false)
+  const prayerUncompletedStats = await this.qazoRepo
+    .createQueryBuilder('prayer')
+    .select([
+      'COUNT(*) AS uncompletedCount',
+      'MAX(prayer.date) AS maxUncompletedDate',
+      'MIN(prayer.date) AS minUncompletedDate',
+    ])
+    .where('prayer.userId = :userId AND prayer.isCompleted = false', { userId: id })
+    .getRawOne();
+
+  // Ro'za uchun ham xuddi shunday
+  const fastingOverallStats = await this.fastingRepo
+    .createQueryBuilder('fasting')
+    .select([
+      'COUNT(*) AS count',
+      'MAX(fasting.date) AS maxDate',
+      'MIN(fasting.date) AS minDate',
+    ])
+    .where('fasting.user_id = :userId', { userId: id })
+    .getRawOne();
+
+  const fastingUncompletedStats = await this.fastingRepo
+    .createQueryBuilder('fasting')
+    .select([
+      'COUNT(*) AS uncompletedCount',
+      'MAX(fasting.date) AS maxUncompletedDate',
+      'MIN(fasting.date) AS minUncompletedDate',
+    ])
+    .where('fasting.user_id = :userId AND fasting.isCompleted = false', { userId: id })
+    .getRawOne();
+
+  return {
+    ...user,
+    // Namoz
+    // @ts-expect-error
+    qazoPrayersCount: Number(prayerUncompletedStats?.uncompletedcount) || 0,
+    hasQazoPrayers: (Number(prayerUncompletedStats?.uncompletedcount) || 0) > 0,
+    maxPrayerDate: prayerOverallStats?.maxdate || null,               // barcha namozlar
+    minPrayerDate: prayerOverallStats?.mindate || null,               // barcha namozlar
+    maxPrayerUncompletedDate: prayerUncompletedStats?.maxuncompleteddate || null,  // faqat qazo
+    minPrayerUncompletedDate: prayerUncompletedStats?.minuncompleteddate || null,  // faqat qazo
+
+    // Ro'za
+    qazoFastingCount: Number(fastingUncompletedStats?.uncompletedcount) || 0,
+    hasQazoFasting: (Number(fastingUncompletedStats?.uncompletedcount) || 0) > 0,
+    maxFastingDate: fastingOverallStats?.maxdate || null,             // barcha ro'zalar
+    minFastingDate: fastingOverallStats?.mindate || null,             // barcha ro'zalar
+    maxFastingUncompletedDate: fastingUncompletedStats?.maxuncompleteddate || null,  // faqat qazo
+    minFastingUncompletedDate: fastingUncompletedStats?.minuncompleteddate || null,  // faqat qazo
+  };
+}
 
   /**
    * Email bo'yicha foydalanuvchini olish

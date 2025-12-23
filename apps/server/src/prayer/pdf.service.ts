@@ -220,7 +220,7 @@ export class PdfService {
             text-align: center;
             margin-bottom: 30px;
             padding: 25px;
-            background-color: #000000;
+           
             color: #ffffff;
             border-radius: 8px;
           }
@@ -289,14 +289,13 @@ export class PdfService {
             width: 100%;
             border-collapse: collapse;
             background: #ffffff;
-            border: 1px solid #e5e7eb;
+             border:1px solid #d1d5db;
             border-radius: 6px;
             overflow: hidden;
           }
 
           thead {
-            background-color: #000000;
-            color: #ffffff;
+            bockground-color: #f3f4f6;
           }
 
           th {
@@ -306,6 +305,7 @@ export class PdfService {
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            color: #374151;
           }
 
           td {
@@ -403,41 +403,6 @@ export class PdfService {
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>Qazo Namozlar Jadvali</h1>
-          <p>Yaratilgan: ${dayjs().format('DD MMMM YYYY, HH:mm')}</p>
-        </div>
-
-        ${
-          userInfo
-            ? `
-        <div class="user-info">
-          <p><strong>Ism:</strong> ${userInfo.name}</p>
-          <p><strong>Email:</strong> ${userInfo.email}</p>
-        </div>
-        `
-            : ''
-        }
-
-        <div class="stats">
-          <div class="stat-card">
-            <div class="label">Jami kunlar</div>
-            <div class="value">${sortedDates.length}</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Jami namozlar</div>
-            <div class="value">${totalPrayers}</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">O'qilgan</div>
-            <div class="value">${completedPrayers}</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Foiz</div>
-            <div class="value">${percentage}%</div>
-          </div>
-        </div>
-
         <table>
           <thead>
             <tr>
@@ -456,13 +421,6 @@ export class PdfService {
           </tbody>
         </table>
 
-        <div class="footer">
-          <p><strong>Qazo Tracker</strong></p>
-          <p>Qazo namozlaringizni kuzatib boring</p>
-          <div class="dua">
-            "Allohim, qabul qilgan namozlarimni qabul et, qoldirgan namozlarimni ada qilishga taufiq ber!"
-          </div>
-        </div>
       </body>
       </html>
     `;

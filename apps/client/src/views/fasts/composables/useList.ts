@@ -8,7 +8,7 @@ import { computed, ref } from 'vue'
 import type { ResponseFastingList } from '@/types/fasting.types'
 export function useList() {
   const { user } = storeToRefs(useUserStore())
-  const year = ref(new Date(user.value?.minFastingDate || '').getFullYear())
+  const year = ref(new Date(user.value?.maxFastingUncompletedDate || '').getFullYear())
   const { data, isPending } = useQuery({
     queryKey: [queryKeys.fasting.list, year],
     queryFn: () => {

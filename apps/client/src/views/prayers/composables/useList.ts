@@ -20,7 +20,7 @@ interface Response {
 }
 export function useList() {
   const { user } = storeToRefs(useUserStore())
-  const date = ref<Dayjs>(dayjs(user.value?.maxPrayerDate))
+  const date = ref<Dayjs>(dayjs(user.value?.maxPrayerUncompletedDate))
   const { data, isPending } = useQuery({
     queryKey: [queryKeys.prayer.list, date],
     queryFn: () => {

@@ -188,7 +188,11 @@ function handleCompleteClick() {
               <div class="mt-4 flex flex-col gap-6">
                 <div class="flex items-center justify-between">
                   <div class="">
-                    <CircleProgressBar :max="100" :color-unfilled="primaryColor" :value="monthlyProgress">
+                    <CircleProgressBar
+                      :max="100"
+                      :color-unfilled="primaryColor"
+                      :value="monthlyProgress"
+                    >
                       <span class="text-xl font-bold text-gray-500 dark:text-white"
                         >{{ monthlyProgress }}%</span
                       >
@@ -198,17 +202,14 @@ function handleCompleteClick() {
                     <div class="flex items-center gap-2">
                       <span class="size-3 rounded-full bg-primary"></span>
                       <span class="text-sm text-gray-500"
-                        >Tutilgan:
-                        <span class="font-bold">{{ stats?.completedCount }}</span></span
+                        >Tutilgan: <span class="font-bold">{{ stats?.completedCount }}</span></span
                       >
                     </div>
                     <div class="flex items-center gap-2">
                       <span class="size-3 rounded-full bg-red-500"></span>
                       <span class="text-sm text-gray-500"
                         >Tutilmagan:
-                        <span class="font-bold">{{
-                          stats?.uncompletedCount
-                        }}</span></span
+                        <span class="font-bold">{{ stats?.uncompletedCount }}</span></span
                       >
                     </div>
                     <p class="text-xs text-gray-500 mt-1">

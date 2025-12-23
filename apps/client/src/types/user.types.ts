@@ -29,4 +29,8 @@ export interface UserProfile {
   qazoFastingCount: number
   maxFastingDate: string | null
   minFastingDate: string | null
+  maxPrayerUncompletedDate: string | null
+  minPrayerUncompletedDate: string | null
+  maxFastingUncompletedDate: string | null
+  minFastingUncompletedDate: string | null
 }
