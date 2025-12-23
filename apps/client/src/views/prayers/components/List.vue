@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import BaseBox from '@/components/BaseBox.vue'
-// import moment from "moment-hijri"
 import confetti from '@hiseb/confetti'
 import {useDownloadAsPdfAllPrayersMutation} from "../composables/useDownloadAsPdfAllPrayersMutation"
 import dayjs from 'dayjs'
@@ -249,14 +248,14 @@ const monthlyProgress = computed(() => {
                     <span class="size-3 rounded-full bg-primary"></span>
                     <span class="text-sm text-gray-500"
                       >O'qilgan:
-                      <span class="font-bold text-white">{{ data?.completedCount }}</span></span
+                      <span class="font-bold">{{ data?.completedCount }}</span></span
                     >
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="size-3 rounded-full bg-red-500"></span>
                     <span class="text-sm text-gray-500"
                       >O'qilmagan:
-                      <span class="font-bold text-white">{{ data?.uncompletedCount }}</span></span
+                      <span class="font-bold">{{ data?.uncompletedCount }}</span></span
                     >
                   </div>
                   <p class="text-xs text-gray-500 mt-1">

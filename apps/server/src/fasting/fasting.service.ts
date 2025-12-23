@@ -116,8 +116,7 @@ export class FastingService {
    */
   async completeFasting(fastingId: string, userId: string): Promise<void> {
     await this.fastingRepo.update(
-      // @ts-expect-error
-      { id: fastingId, user_id: userId },
+      { id: fastingId },
       {
         isCompleted: true,
         completedAt: new Date(),
@@ -139,7 +138,20 @@ export class FastingService {
 
     query.orderBy('fasting.date', 'ASC');
 
-    return await query.getMany();
+    // Barcha ma'lumotlarni olish
+    const fastingList = await query.getMany();
+
+    // Statistikani hisoblash
+    const totalCount = fastingList.length;
+    const completedCount = fastingList.filter((f) => f.isCompleted).length;
+    const uncompletedCount = totalCount - completedCount;
+
+    return {
+      totalCount,
+      completedCount,
+      uncompletedCount,
+      fastingList,
+    };
   }
 
   // formatDate

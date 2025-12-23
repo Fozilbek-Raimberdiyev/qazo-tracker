@@ -10,7 +10,7 @@ const { menuItemsList } = useMenuItemsList()
 const originPosition = ref({ x: 0, y: 0 })
 const isExpanded = useLocalStorage('isExpanded', true)
 // Transition speed control (in seconds)
-const transitionSpeed = ref(0.5) // Adjust this value to change animation speed
+const transitionSpeed = ref(0.4) // Adjust this value to change animation speed
 
 // Available transition effects:
 // 'circle-expand' - Circle expands from top center (RECOMMENDED)
@@ -19,7 +19,7 @@ const transitionSpeed = ref(0.5) // Adjust this value to change animation speed
 // 'flip-card' - 3D card flip effect
 // 'blur-fade' - Fade with blur effect
 // 'slide-vertical' - Slide from bottom
-const defaultTransition = ref('blue-fade')
+const defaultTransition = ref('circle-expand')
 
 const toggleSidebar = () => {
   isExpanded.value = !isExpanded.value
@@ -60,7 +60,7 @@ router.beforeEach(() => {
     <!-- Side Navigation Bar -->
     <aside
       :class="[
-        'fixed top-0 left-0 h-screen shrink-0 p-4 flex flex-col justify-between sidebar border-r border-solid border-(--color-border-light) dark:border-(--color-border-dark) transition-all duration-300 z-10',
+        'fixed top-0 left-0 h-screen shrink-0 p-4 flex flex-col justify-between sidebar border-r border-solid border-(--color-border-light) dark:border-(--color-border-dark) transition-all duration-300 z-10 bg-white dark:bg-transparent',
         isExpanded ? 'w-80' : 'w-20',
       ]"
     >
@@ -141,7 +141,7 @@ router.beforeEach(() => {
         >
           <span class="material-symbols-outlined">settings</span>
           <span v-show="isExpanded" class="text-sm font-medium leading-normal whitespace-nowrap">
-            Settings
+            Sozlamalar
           </span>
         </RouterLink>
 
@@ -149,14 +149,14 @@ router.beforeEach(() => {
           to="/auth/login"
           @click="$router.push('/auth/login')"
           class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-          :title="!isExpanded ? 'Log Out' : ''"
+          :title="!isExpanded ? 'Tizimdan chiqish' : ''"
         >
           <span class="material-symbols-outlined">logout</span>
           <span
             v-show="isExpanded"
             class="text-sm font-medium leading-normal whitespace-nowrap dark:text-white/70"
           >
-            Log Out
+            Tizimdan chiqish
           </span>
         </RouterLink>
       </div>

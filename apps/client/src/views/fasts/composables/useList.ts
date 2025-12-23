@@ -5,16 +5,16 @@ import type { AxiosResponse } from 'axios'
 import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
-import type { IFasting } from '@/types/fasting.types'
+import type { ResponseFastingList } from '@/types/fasting.types'
 export function useList() {
   const { user } = storeToRefs(useUserStore())
   const year = ref(new Date(user.value?.minFastingDate || '').getFullYear())
   const { data, isPending } = useQuery({
     queryKey: [queryKeys.fasting.list, year],
     queryFn: () => {
-      return useGet<IFasting[]>('/api/fasting/my?year=' + year.value)
+      return useGet<ResponseFastingList>('/api/fasting/my?year=' + year.value)
     },
-    select: (data: AxiosResponse<IFasting[]>) => {
+    select: (data: AxiosResponse<ResponseFastingList>) => {
       return data.data
     },
     enabled: computed(() => {
@@ -22,9 +22,12 @@ export function useList() {
     }),
   })
 
+  const fastingList = computed(() => data.value?.fastingList || [])
+
   return {
     data,
     isPending,
-    year
+    year,
+    fastingList,
   }
 }

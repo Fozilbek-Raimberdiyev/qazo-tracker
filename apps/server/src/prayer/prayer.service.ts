@@ -67,21 +67,6 @@ export class PrayerService {
     return { success: true };
   }
 
-  /**
-   * Userning qazo namozlarini olish
-   */
-  // async getUserPrayers(userId: string, dateFrom?: string, dateTo?: string) {
-  //   const qb = this.qazoRepo
-  //     .createQueryBuilder('prayer')
-  //     .where('prayer.userId = :userId', { userId })
-  //     .leftJoinAndSelect('prayer.prayerType', 'prayerType')
-  //     .orderBy('prayer.date', 'ASC');
-  //   if (dateFrom) qb.andWhere('prayer.date >= :dateFrom', { dateFrom });
-  //   if (dateTo) qb.andWhere('prayer.date <= :dateTo', { dateTo });
-
-  //   return qb.getMany();
-  // }
-
   async getUserPrayers(userId: string, fromDate?: string, toDate?: string) {
     const params: (string | null)[] = [userId];
     if (fromDate) params.push(fromDate);

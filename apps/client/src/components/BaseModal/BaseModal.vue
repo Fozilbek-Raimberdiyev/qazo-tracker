@@ -38,4 +38,6 @@ const emit = defineEmits(['cancel'])
     <slot></slot>
   </Modal>
 </template>
-<style scoped></style>
+<style scoped>
+
+</style>

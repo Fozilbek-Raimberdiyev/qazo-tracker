@@ -10,3 +10,10 @@ export interface IFasting {
   createdAt: string
   updatedAt: string
 }
+
+export interface ResponseFastingList {
+  completedCount: number
+  fastingList: IFasting[]
+  totalCount: number
+  uncompletedCount: number
+}
