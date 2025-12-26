@@ -18,4 +18,10 @@ export const queryKeys = {
     list: 'fasting.list',
     singleComplete: 'fasting.complete',
   },
+  dashboard : {
+    prayersCount : 'dashboard.prayersCount',
+    prayerCountPerYear : 'dashboard.prayerCountPerYear',
+    prayersCountByPrayerTypes : 'dashboard.prayersCountByPrayerTypes',
+    last24MonthCompletedCount : 'dashboard.last24MonthCompletedCount'
+  }
 }

@@ -35,6 +35,10 @@ export class QazoPrayer {
   @Column({ default: false })
   isCompleted: boolean;
 
+  @ApiProperty({ example: '2025-12-18T14:30:00Z' })
+  @Column({ type: 'timestamptz', nullable: true })
+  completedAt: Date;
+
   @ApiProperty()
   @CreateDateColumn()
   createdAt: Date;

@@ -177,6 +177,9 @@ export class PrayerService {
    * Qazo namozini bajarilgan deb belgilash
    */
   async completePrayer(prayerId: string, userId: string): Promise<void> {
-    await this.qazoRepo.update({ id: prayerId, userId }, { isCompleted: true });
+    await this.qazoRepo.update(
+      { id: prayerId, userId },
+      { isCompleted: true, completedAt: new Date() },
+    );
   }
 }

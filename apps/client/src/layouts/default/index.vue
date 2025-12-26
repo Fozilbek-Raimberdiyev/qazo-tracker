@@ -4,14 +4,17 @@ import { useRouter } from 'vue-router'
 import { useMenuItemsList } from './composables/useMenuItemsList'
 import { useLocalStorage } from '@vueuse/core'
 import { useAuth } from '@/composables/useAuth'
+import { useDeviceStore } from '@/stores/device.store'
+import { storeToRefs } from 'pinia'
+import MobileMenu from './components/MobileMenu.vue'
 const { user, isPending } = useAuth()
+const { isMobile } = storeToRefs(useDeviceStore())
 const router = useRouter()
 const { menuItemsList } = useMenuItemsList()
 const originPosition = ref({ x: 0, y: 0 })
 const isExpanded = useLocalStorage('isExpanded', true)
 // Transition speed control (in seconds)
 const transitionSpeed = ref(0.4) // Adjust this value to change animation speed
-
 // Available transition effects:
 // 'circle-expand' - Circle expands from top center (RECOMMENDED)
 // 'slide-fade' - Smooth slide with fade
@@ -20,7 +23,6 @@ const transitionSpeed = ref(0.4) // Adjust this value to change animation speed
 // 'blur-fade' - Fade with blur effect
 // 'slide-vertical' - Slide from bottom
 const defaultTransition = ref('circle-expand')
-
 const toggleSidebar = () => {
   isExpanded.value = !isExpanded.value
 }
@@ -59,6 +61,7 @@ router.beforeEach(() => {
   <div class="flex min-h-screen font-display bg-background-light dark:bg-background-dark">
     <!-- Side Navigation Bar -->
     <aside
+      v-if="!isMobile"
       :class="[
         'fixed top-0 left-0 h-screen shrink-0 p-4 flex flex-col justify-between sidebar border-r border-solid border-(--color-border-light) dark:border-(--color-border-dark) transition-all duration-300 z-10 bg-white dark:bg-transparent',
         isExpanded ? 'w-80' : 'w-20',
@@ -67,7 +70,7 @@ router.beforeEach(() => {
       <!-- Toggle Button - Positioned on border -->
       <button
         @click="toggleSidebar"
-        class="toggle-button absolute top-1/2 -right-3 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-white dark:bg-gray-800 border border-solid border-(--color-border) rounded-full shadow-md hover:shadow-lg transition-all dark:text-white/70 dark:hover:text-white z-20"
+        class="toggle-button absolute top-1/2 -right-3 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-white dark:bg-gray-800 border border-solid border-(--color-border) rounded-full shadow-md hover:shadow-lg transition-all dark:text-white/70 dark:hover:text-white z-20 cursor-pointer"
       >
         <span class="material-symbols-outlined text-base">
           {{ isExpanded ? 'chevron_left' : 'chevron_right' }}
@@ -90,6 +93,7 @@ router.beforeEach(() => {
         <nav class="flex flex-col gap-2">
           <RouterLink
             v-for="(item, index) in menuItemsList"
+            v-show="item.visible"
             :key="index"
             class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             :to="item.path"
@@ -167,7 +171,7 @@ router.beforeEach(() => {
       v-if="!isPending"
       :class="[
         'w-full 2xl:px-12 p-6 transition-all duration-300 overflow-hidden relative',
-        isExpanded ? 'ml-80' : 'ml-20',
+        isMobile ? 'ml-0' : isExpanded ? 'ml-64' : 'ml-20',
       ]"
       :style="{
         '--origin-x': `${originPosition.x}px`,
@@ -185,6 +189,7 @@ router.beforeEach(() => {
       </RouterView>
     </main>
   </div>
+  <MobileMenu v-if="isMobile"></MobileMenu>
 </template>
 
 <style>
