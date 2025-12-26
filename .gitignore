@@ -1,7 +1,7 @@
 node_modules
 .turbo
 apps/server/dist
-
+apps/client/dev-dist
 .env
 .env.*
 **/env
