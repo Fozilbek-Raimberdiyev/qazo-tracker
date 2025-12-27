@@ -1,6 +1,6 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { StatisticService } from './statistic.service';
 
 @ApiTags('Statistic')
@@ -30,10 +30,15 @@ export class StatisticController {
       request.user.userId,
     );
   }
-  @Get('prayers-count-monthly-completed-last-24-months-filled')
-  getMonthlyCompletedPrayersLast24MonthsFilled(@Req() request): Promise<any> {
-    return this.statisticService.getMonthlyCompletedPrayersLast24MonthsFilled(
+  @Get('prayers-count-monthly-completed-by-year')
+  @ApiQuery({ name: 'year', required: true })
+  getMonthlyCompletedPrayersByYear(
+    @Req() request,
+    @Query() query
+  ): Promise<any> {
+    return this.statisticService.getMonthlyCompletedPrayersByYear(
       request.user.userId,
+      query.year,
     );
   }
 }

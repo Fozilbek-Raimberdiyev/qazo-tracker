@@ -12,8 +12,16 @@ import { useDeviceStore } from '@/stores/device.store'
 import { TypographyText, TypographyTitle } from 'ant-design-vue'
 import { useUserStore } from '@/stores/user.store'
 import { storeToRefs } from 'pinia'
+import { useRouteQuery } from '@vueuse/router'
+import BaseTab from '@/components/BaseTab/BaseTab.vue'
+import Fasting from './fasting.vue'
 const { isMobile } = storeToRefs(useDeviceStore())
 const { user } = storeToRefs(useUserStore())
+enum Mode {
+  Prayer = 'prayer',
+  Fast = 'fast',
+}
+const dashboardMode = useRouteQuery<Mode>('mode', Mode.Prayer)
 const yearInterval = computed(() => {
   const fromYear = user.value!.minPrayerDate
     ? new Date(user.value!.minPrayerDate).getFullYear()
@@ -23,10 +31,20 @@ const yearInterval = computed(() => {
     : new Date().getFullYear()
   return { fromYear, toYear }
 })
+
+const modes = [
+  { key: Mode.Prayer, label: 'Qazo namozlar tahlili' },
+  {
+    key: Mode.Fast,
+    label: 'Qazo ro`zalar tahlili',
+  },
+]
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
+  <BaseTab :items="modes" v-model="dashboardMode"></BaseTab>
+  <TransitionGroup name="fade">
+      <div class="flex flex-col gap-6" v-if="dashboardMode===Mode.Prayer">
     <!-- Header -->
     <BaseBox>
       <div class="flex justify-between items-center">
@@ -70,4 +88,19 @@ const yearInterval = computed(() => {
     <!-- Table -->
     <StatsTable />
   </div>
+  <Fasting v-if="dashboardMode===Mode.Fast"></Fasting>
+  </TransitionGroup>
+
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

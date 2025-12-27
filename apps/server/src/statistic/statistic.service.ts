@@ -74,48 +74,50 @@ export class StatisticService {
     }));
   }
 
+  async getMonthlyCompletedPrayersByYear(
+    userId: string,
+    year?: number, // optional qilib qo'ydik
+  ): Promise<{ year: number; month: number; completedCount: number }[]> {
+    let sql: string;
+    let params: any[] = [userId];
 
-  async getMonthlyCompletedPrayersLast24MonthsFilled(userId: string): Promise<
-  { year: number; month: number; completedCount: number }[]
-> {
-  const sql = `
-    WITH months AS (
-      SELECT 
-        EXTRACT(YEAR FROM gs.month)::INTEGER AS year,
-        EXTRACT(MONTH FROM gs.month)::INTEGER AS month
-      FROM generate_series(
-        date_trunc('month', NOW() - INTERVAL '23 months'),
-        date_trunc('month', NOW()),
-        INTERVAL '1 month'
-      ) AS gs(month)
-    ),
-    completions AS (
-      SELECT 
-        EXTRACT(YEAR FROM "completedAt")::INTEGER AS year,
-        EXTRACT(MONTH FROM "completedAt")::INTEGER AS month,
-        COUNT(*) AS "completedCount"
-      FROM qazo_prayers
-      WHERE "userId" = $1
-        AND "isCompleted" = true
-        AND "completedAt" IS NOT NULL
-        AND "completedAt" >= NOW() - INTERVAL '24 months'
-      GROUP BY EXTRACT(YEAR FROM "completedAt"), EXTRACT(MONTH FROM "completedAt")
-    )
-    SELECT 
-      m.year,
-      m.month,
-      COALESCE(c."completedCount", 0) AS "completedCount"
-    FROM months m
-    LEFT JOIN completions c ON m.year = c.year AND m.month = c.month
-    ORDER BY m.year DESC, m.month DESC;
-  `;
+    if (year) {
+      // Faqat tanlangan yil uchun 12 oy
+      sql = `
+      WITH months AS (
+        SELECT
+          $2::INTEGER AS year,
+          gs.month_num AS month
+        FROM generate_series(1, 12) AS gs(month_num)
+      ),
+      completions AS (
+        SELECT
+          EXTRACT(MONTH FROM "completedAt")::INTEGER AS month,
+          COUNT(*) AS "completedCount"
+        FROM qazo_prayers
+        WHERE "userId" = $1
+          AND "isCompleted" = true
+          AND "completedAt" IS NOT NULL
+          AND EXTRACT(YEAR FROM "completedAt")::INTEGER = $2
+        GROUP BY EXTRACT(MONTH FROM "completedAt")
+      )
+      SELECT
+        m.year,
+        m.month,
+        COALESCE(c."completedCount", 0) AS "completedCount"
+      FROM months m
+      LEFT JOIN completions c ON m.month = c.month
+      ORDER BY m.month ASC;
+    `;
+      params.push(year);
+    }
+    // @ts-expect-error
+    const result = await this.qazoPrayer.query(sql, params);
 
-  const result = await this.qazoPrayer.query(sql, [userId]);
-
-  return result.map(row => ({
-    year: Number(row.year),
-    month: Number(row.month),
-    completedCount: Number(row.completedCount),
-  }));
-}
+    return result.map((row) => ({
+      year: Number(row.year),
+      month: Number(row.month),
+      completedCount: Number(row.completedCount),
+    }));
+  }
 }
