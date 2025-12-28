@@ -22,6 +22,9 @@ export const queryKeys = {
     prayersCount : 'dashboard.prayersCount',
     prayerCountPerYear : 'dashboard.prayerCountPerYear',
     prayersCountByPrayerTypes : 'dashboard.prayersCountByPrayerTypes',
-    last24MonthCompletedCount : 'dashboard.last24MonthCompletedCount'
+    last24MonthCompletedCount : 'dashboard.last24MonthCompletedCount',
+    fastingCount : 'dashboard.fastingCount',
+    fastingCountPerYear : "dashboard.fastingCountPerYear",
+    completedCountFastingByYear : "dashboard.completedCountFastingByYear"
   }
 }

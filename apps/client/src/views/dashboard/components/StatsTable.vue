@@ -4,7 +4,7 @@
     <BaseTable :columns :data-source="data" :loading="isPending" :currentPage="1">
       <template #bodyCell="{ record, column }">
         <div v-if="column.key === 'prayer'">
-          <span class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          <span class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             {{ record.prayerType.name_uz }}
           </span>
         </div>
@@ -26,7 +26,7 @@
                 :style="{ width: `${(record.completedPrayers / record.totalPrayers) * 100}%` }"
               ></div>
             </div>
-            <span class="text-sm font-medium text-gray-700"
+            <span class="text-sm font-medium"
               >{{ Math.floor((record.completedPrayers / record.totalPrayers) * 100) }}%</span
             >
           </div>

@@ -14,14 +14,19 @@ export class StatisticController {
     return this.statisticService.getPrayersCount(request.user.userId);
   }
 
-  @Get('fastings-count')
-  getFastingsCount(): [] {
-    return [];
+  @Get('fasting-count')
+  getFastingsCount(@Req() request): Promise<any> {
+    return this.statisticService.getFastingCount(request.user.userId);
   }
 
   @Get('prayers-count-per-year')
   getPrayersCountPerYear(@Req() request): Promise<any> {
     return this.statisticService.getPrayersCountPerYear(request.user.userId);
+  }
+
+  @Get('fasting-count-per-year')
+  getFastingCountPerYear(@Req() request): Promise<any> {
+    return this.statisticService.getFastingCountPerYear(request.user.userId);
   }
 
   @Get('prayers-count-by-prayer-types')
@@ -34,9 +39,21 @@ export class StatisticController {
   @ApiQuery({ name: 'year', required: true })
   getMonthlyCompletedPrayersByYear(
     @Req() request,
-    @Query() query
+    @Query() query,
   ): Promise<any> {
     return this.statisticService.getMonthlyCompletedPrayersByYear(
+      request.user.userId,
+      query.year,
+    );
+  }
+
+  @Get('fasting-count-monthly-completed-by-year')
+  @ApiQuery({ name: 'year', required: true })
+  getMonthlyCompletedFastingsByYear(
+    @Req() request,
+    @Query() query,
+  ): Promise<any> {
+    return this.statisticService.getMonthlyCompletedFastingByYear(
       request.user.userId,
       query.year,
     );

@@ -4,11 +4,9 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
 import BaseBox from '@/components/BaseBox.vue'
-import { usePrayerCountPerYear } from '../../composables/usePrayerCountPerYear'
 import { TypographyTitle } from 'ant-design-vue'
-
-const { data, isPending } = usePrayerCountPerYear()
-
+import {useFastingCountPerYear} from "../../composables/useFastingCountPerYear"
+const {data,isPending} = useFastingCountPerYear()
 const chartRef = ref<HTMLDivElement | null>(null)
 let chartInstance: ECharts | null = null
 
@@ -33,13 +31,13 @@ const initChart = async (): Promise<void> => {
 
     // Ma'lumotlarni tayyorlash
     const years = data.value.map((item) => item.year)
-    const completed = data.value.map((item) => Number(item.completedPrayers) || 0)
-    const uncompleted = data.value.map((item) => Number(item.uncompletedPrayers) || 0)
+    const completed = data.value.map((item) => Number(item.completedFasting) || 0)
+    const uncompleted = data.value.map((item) => Number(item.uncompletedFasting) || 0)
 
     // Bajarilish foizini hisoblash
     const percentages = data.value.map((item) => {
-      const totalNum = Number(item.totalPrayers) || 0
-      const completedNum = Number(item.completedPrayers) || 0
+      const totalNum = Number(item.totalFasting) || 0
+      const completedNum = Number(item.completedFasting) || 0
       return totalNum > 0 ? Number(((completedNum / totalNum) * 100).toFixed(1)) : 0
     })
 
@@ -189,7 +187,7 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <BaseBox>
-    <TypographyTitle :level="3"> Yillik qazo namoz tahlili </TypographyTitle>
+    <TypographyTitle :level="3"> Yillik qazo ro'zalar tahlili </TypographyTitle>
     <div
       v-if="isPending"
       style="height: 350px; display: flex; align-items: center; justify-content: center"

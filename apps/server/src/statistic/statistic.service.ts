@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { QazoFasting } from 'src/fasting/entities/fasting.entity';
 import { QazoPrayer } from 'src/prayer/entities/prayer.entity';
 import { Repository } from 'typeorm';
 
@@ -8,6 +9,8 @@ export class StatisticService {
   constructor(
     @InjectRepository(QazoPrayer)
     private readonly qazoPrayer: Repository<QazoPrayer>,
+    @InjectRepository(QazoFasting)
+    private readonly qazoFasting: Repository<QazoFasting>,
   ) {}
 
   //   getPrayersCount
@@ -23,6 +26,18 @@ export class StatisticService {
     return result[0];
   }
 
+  async getFastingCount(userId: string): Promise<any> {
+    const sql = `
+    SELECT COUNT(*) AS "totalFasting",
+    SUM(CASE WHEN "isCompleted" THEN 1 ELSE 0 END) AS "completedFasting",
+    SUM(CASE WHEN NOT "isCompleted" THEN 1 ELSE 0 END) AS "uncompletedFasting"
+    FROM qazo_fasting
+    WHERE "user_id" = $1
+    `;
+    const result = await this.qazoFasting.query(sql, [userId]);
+    return result[0];
+  }
+
   async getPrayersCountPerYear(userId: string): Promise<any> {
     const sql = `
     SELECT EXTRACT(YEAR FROM "date") AS year,
@@ -35,6 +50,21 @@ export class StatisticService {
     ORDER BY year;
     `;
     const result = await this.qazoPrayer.query(sql, [userId]);
+    return result;
+  }
+
+  async getFastingCountPerYear(userId: string): Promise<any> {
+    const sql = `
+    SELECT EXTRACT(YEAR FROM "date") AS year,
+    COUNT(*) AS "totalFasting",
+    SUM(CASE WHEN "isCompleted" THEN 1 ELSE 0 END) AS "completedFasting",
+    SUM(CASE WHEN NOT "isCompleted" THEN 1 ELSE 0 END) AS "uncompletedFasting"
+    FROM qazo_fasting
+    WHERE "user_id" = $1
+    GROUP BY year
+    ORDER BY year;
+    `;
+    const result = await this.qazoFasting.query(sql, [userId]);
     return result;
   }
 
@@ -119,5 +149,43 @@ export class StatisticService {
       month: Number(row.month),
       completedCount: Number(row.completedCount),
     }));
+  }
+
+  async getMonthlyCompletedFastingByYear(userId: string, year?: number): Promise<any[]> {
+    const sql = `
+    WITH months AS (
+      SELECT
+        $2::INTEGER AS year,
+        gs.month_num AS month
+      FROM generate_series(1, 12) AS gs(month_num)
+    ),
+    completions AS (
+      SELECT
+        EXTRACT(MONTH FROM "completedAt")::INTEGER AS month,
+        COUNT(*) AS "completedCount"
+      FROM qazo_fasting
+      WHERE "user_id" = $1
+        AND "isCompleted" = true
+        AND "completedAt" IS NOT NULL
+        AND EXTRACT(YEAR FROM "completedAt")::INTEGER = $2
+      GROUP BY EXTRACT(MONTH FROM "completedAt")
+    )
+    SELECT
+      m.year,
+      m.month,
+      COALESCE(c."completedCount", 0) AS "completedCount"
+    FROM months m
+    LEFT JOIN completions c ON m.month = c.month
+    ORDER BY m.month ASC;
+  `;
+    const params = [userId, year];
+    return await this.qazoFasting.query(sql, params).then((result) => result.map(
+      (row) => ({
+        year: Number(row.year),
+        month: Number(row.month),
+        completedCount: Number(row.completedCount),
+      }),
+    )
+    )
   }
 }

@@ -4,22 +4,36 @@ import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import BaseBox from '@/components/BaseBox.vue'
 import { TypographyTitle } from 'ant-design-vue'
-import { useLast24MonthCompletedCount } from '../../composables/useCompletedCountByYear'
-
-const { data, isPending } = useLast24MonthCompletedCount()
-
+import { useCompletedCountFastingByYear } from '../../composables/useCompletedCountFastingByYear'
+import BaseSelect from '@/components/BaseSelect/BaseSelect.vue'
+import { useUserStore } from '@/stores/user.store'
+import { storeToRefs } from 'pinia'
+const { data, isPending, year } = useCompletedCountFastingByYear()
+const { user } = storeToRefs(useUserStore())
 const chartRef = ref<HTMLDivElement | null>(null)
 let chartInstance: echarts.ECharts | null = null
-
-// Hozirgi sana va 2 yil oldingi sanani hisoblash
+const yearsOptions = computed(() => {
+  const options = []
+  const userSignedYear = new Date(
+    user.value?.createdAt ? user.value.createdAt : Date.now(),
+  ).getFullYear()
+  for (let i = userSignedYear; i <= new Date().getFullYear(); i++) {
+    options.push({
+      label: i.toString(),
+      value: i.toString(),
+    })
+  }
+  return options
+})
+// Tanlangan yilning yanvar 1-dan dekabr 31-gacha
 const dateRange = computed(() => {
-  const now = new Date()
-  const startDate = new Date(now)
-  startDate.setMonth(startDate.getMonth() - 24)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  const selectedYear = year.value ? parseInt(year.value) : new Date().getFullYear().toString()
 
   return {
-    start: startDate.toISOString().split('T')[0],
-    end: now.toISOString().split('T')[0],
+    start: `${selectedYear}-01-01`,
+    end: `${selectedYear}-12-31`,
   }
 })
 
@@ -97,8 +111,6 @@ const initChart = async (): Promise<void> => {
           fontSize: 11,
         },
       },
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       calendar: {
         top: 50,
         left: 30,
@@ -186,6 +198,17 @@ watch(
   { immediate: true },
 )
 
+// Year o'zgarganda ham chartni qayta chizish
+watch(
+  () => year.value,
+  async () => {
+    if (data.value && data.value.length > 0) {
+      await nextTick()
+      initChart()
+    }
+  },
+)
+
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   if (chartInstance) {
@@ -196,7 +219,10 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <BaseBox>
-    <TypographyTitle :level="3">Yillik bajarilish xaritasi (Oxirgi 24 oy)</TypographyTitle>
+    <div class="flex justify-between gap-4">
+      <TypographyTitle :level="3">Yillik bajarilish xaritasi</TypographyTitle>
+      <BaseSelect v-model="year" class="max-w-60" :options="yearsOptions"></BaseSelect>
+    </div>
     <div
       v-if="isPending"
       style="height: 200px; display: flex; align-items: center; justify-content: center"

@@ -171,7 +171,7 @@ router.beforeEach(() => {
       v-if="!isPending"
       :class="[
         'w-full 2xl:px-12 p-6 transition-all duration-300 overflow-hidden relative',
-        isMobile ? 'ml-0' : isExpanded ? 'ml-64' : 'ml-20',
+        isMobile ? 'ml-0' : isExpanded ? 'ml-80' : 'ml-20',
       ]"
       :style="{
         '--origin-x': `${originPosition.x}px`,

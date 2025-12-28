@@ -1,6 +1,6 @@
 <template>
   <BaseBox>
-    <TypographyTitle :level="3"> Namoz vaqtlari taqsimoti </TypographyTitle>
+    <TypographyTitle :level="3"> Ro'za bajarilish statistikasi </TypographyTitle>
     <div
       v-if="isPending"
       style="height: 350px; display: flex; align-items: center; justify-content: center"
@@ -8,7 +8,7 @@
       <span>Yuklanmoqda...</span>
     </div>
     <div
-      v-else-if="!data || data.length === 0"
+      v-else-if="!data"
       style="height: 350px; display: flex; align-items: center; justify-content: center"
     >
       <span>Ma'lumot topilmadi</span>
@@ -18,29 +18,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue'
 import * as echarts from 'echarts'
 import BaseBox from '@/components/BaseBox.vue'
 import { TypographyTitle } from 'ant-design-vue'
-import { usePrayersCountByPrayerTypes } from '../../composables/usePrayersCountByPrayerTypes'
+import { useFastingListCount } from "../../composables/useFastingListCount"
 
-const { data, isPending } = usePrayersCountByPrayerTypes()
-
+const { data, isPending } = useFastingListCount()
 const chartRef = ref<HTMLDivElement | null>(null)
 let chartInstance: echarts.ECharts | null = null
 
-// Namoz turlari uchun ranglar (6 ta)
-const prayerColors: string[] = [
-  '#3b82f6', // ko'k
-  '#10b981', // yashil
-  '#f59e0b', // sariq
-  '#8b5cf6', // binafsha
-  '#ec4899', // pushti
-  '#06b6d4', // turkuaz
-]
+// Bajarilgan va bajarilmagan uchun ranglar
+const chartColors = {
+  completed: '#10b981', // yashil - bajarilgan
+  uncompleted: '#ef4444', // qizil - bajarilmagan
+}
+
+// Chart uchun ma'lumotlarni tayyorlash
+const chartData = computed(() => {
+  if (!data.value) return []
+
+  const completed = parseInt(data.value.completedFasting) || 0
+  const uncompleted = parseInt(data.value.uncompletedFasting) || 0
+
+  return [
+    {
+      value: completed,
+      name: 'Bajarilgan',
+      itemStyle: {
+        color: chartColors.completed,
+      },
+    },
+    {
+      value: uncompleted,
+      name: 'Bajarilmagan',
+      itemStyle: {
+        color: chartColors.uncompleted,
+      },
+    },
+  ]
+})
 
 const initChart = async (): Promise<void> => {
-  if (!chartRef.value || !data.value || data.value.length === 0) {
+  if (!chartRef.value || !data.value) {
     return
   }
 
@@ -56,43 +76,32 @@ const initChart = async (): Promise<void> => {
   try {
     chartInstance = echarts.init(chartRef.value)
 
-    // Pie chart uchun ma'lumotlarni tayyorlash
-    const chartData = data.value.map((item, index) => ({
-      value: item.totalPrayers,
-      name: item.prayerType.name_uz, // prayerType object ichidan name olamiz
-      itemStyle: {
-        color: prayerColors[index % prayerColors.length], // index bo'yicha rang
-      },
-    }))
+    const total = parseInt(data.value.totalFasting) || 0
 
     const option: echarts.EChartsOption = {
       tooltip: {
         trigger: 'item',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: (params: any) => {
-          const dataItem = data.value?.find((d) => d.prayerType.name_uz === params.name)
-          if (!dataItem) return params.name
-
           return `
             <strong>${params.name}</strong><br/>
-            Bajarilgan: ${dataItem.completedPrayers}<br/>
-            Qoldirilgan: ${dataItem.uncompletedPrayers}<br/>
-            Jami: ${dataItem.totalPrayers}<br/>
+            Soni: ${params.value}<br/>
+            Jami: ${total}<br/>
             Foiz: ${params.percent}%
           `
         },
       },
-      // legend: {
-      //   orient: 'vertical',
-      //   left: 'left',
-      //   top: 'center',
-      //   data: data.value.map(item => item.prayerType.name_uz)
-      // },
+      legend: {
+        orient: 'horizontal',
+        bottom: '10',
+        left: 'center',
+        data: ['Bajarilgan', 'Bajarilmagan'],
+      },
       series: [
         {
           type: 'pie',
           radius: ['40%', '70%'],
-          center: ['60%', '50%'],
+          center: ['50%', '45%'],
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 10,
@@ -101,7 +110,7 @@ const initChart = async (): Promise<void> => {
           },
           label: {
             show: true,
-            formatter: '{b}\n{d}%',
+            formatter: '{b}\n{c} ta\n({d}%)',
             fontSize: 12,
           },
           emphasis: {
@@ -116,7 +125,7 @@ const initChart = async (): Promise<void> => {
               shadowColor: 'rgba(0, 0, 0, 0.5)',
             },
           },
-          data: chartData,
+          data: chartData.value,
         },
       ],
     }
@@ -141,7 +150,7 @@ onMounted(() => {
 watch(
   () => data.value,
   async (newData) => {
-    if (newData && newData.length > 0) {
+    if (newData) {
       await nextTick()
       initChart()
     }
