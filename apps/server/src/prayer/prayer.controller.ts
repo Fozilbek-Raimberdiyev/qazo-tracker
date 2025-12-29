@@ -10,12 +10,12 @@ import {
   Query,
   Res,
   HttpStatus,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PrayerService } from './prayer.service';
-import { GenerateQazoDto } from './dto';
+import { CompleteMultiplePrayersDto, GenerateQazoDto } from './dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-
 @ApiTags('Prayer')
 @Controller('prayer')
 @UseGuards(AuthGuard('jwt'))
@@ -75,6 +75,28 @@ export class PrayerController {
   @ApiOperation({ summary: 'Qazo namozini bajarildi deb belgilash' })
   async complete(@Req() req, @Param('id') id: string) {
     await this.qazoService.completePrayer(id, req.user.userId);
+    return { success: true };
+  }
+  @Put('complete')
+  @ApiOperation({ summary: 'Qazo namozini bajarildi deb belgilash' })
+  async completeMultiple(@Req() req, @Body() body: CompleteMultiplePrayersDto) {
+    await this.qazoService.completePrayersMultiple(
+      body.prayerIds,
+      req.user.userId,
+    );
+    return { success: true };
+  }
+
+  @Put('uncomplete')
+  @ApiOperation({ summary: 'Qazo namozini bajarilmagan qilib belgilash' })
+  async uncompleteMultiple(
+    @Req() req,
+    @Body() body: CompleteMultiplePrayersDto,
+  ) {
+    await this.qazoService.uncompletePrayersMultiple(
+      body.prayerIds,
+      req.user.userId,
+    );
     return { success: true };
   }
 }

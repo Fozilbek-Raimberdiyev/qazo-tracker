@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseBox from '@/components/BaseBox.vue'
 import confetti from '@hiseb/confetti'
-import {useDownloadAsPdfAllPrayersMutation} from "../composables/useDownloadAsPdfAllPrayersMutation"
+import { useDownloadAsPdfAllPrayersMutation } from '../composables/useDownloadAsPdfAllPrayersMutation'
 import dayjs from 'dayjs'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -15,6 +15,10 @@ import {
   Alert,
   Descriptions,
   DescriptionsItem,
+  Dropdown,
+  MenuItem,
+  Menu,
+  CheckboxGroup,
 } from 'ant-design-vue'
 import BaseTab from '@/components/BaseTab/BaseTab.vue'
 import { computed, h, onMounted, ref } from 'vue'
@@ -34,10 +38,15 @@ import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import BaseSpin from '@/components/BaseSpin/BaseSpin.vue'
 import type { Prayer } from '@/types/prayer.types'
 import { storeToRefs } from 'pinia'
+import MarkedItemsSection from './MarkedItemsSection.vue'
+import BaseCheckbox from '@/components/BaseCheckbox/BaseCheckbox.vue'
 const { user } = storeToRefs(useUserStore())
 const { uzbekLocale } = useCalendarData()
 const { primaryColor } = storeToRefs(useThemeStore())
-const {isPending : isPendingDownload, mutateAsync: downloadPdf} = useDownloadAsPdfAllPrayersMutation()
+const markMode = ref(false)
+const markedPrayers = ref<string[]>([])
+const { isPending: isPendingDownload, mutateAsync: downloadPdf } =
+  useDownloadAsPdfAllPrayersMutation()
 // Dayjs konfiguratsiyasi
 dayjs.extend(weekday)
 dayjs.extend(localeData)
@@ -130,96 +139,148 @@ const monthlyProgress = computed(() => {
   return Math.floor((Number(data.value?.completedCount) / Number(data.value?.totalPrayers)) * 100)
 })
 
+function handleMarkedSectionSuccess() {
+  markMode.value = false
+  markedPrayers.value = []
+}
+
+function handleMarkedSectionCancel() {
+  markedPrayers.value = []
+  markMode.value = false
+}
 </script>
 
 <template>
   <BaseSpin :spinning="isPending">
-
     <!-- PageHeading -->
-    <div class="flex items-center justify-between gap-4">
-      <div class="flex flex-col gap-2">
-        <TypographyTitle :level="2"> Qazo namozlar </TypographyTitle>
-        <TypographyText type="secondary">
-          Qazo namozlaringizni ko'ring va ularni o'zgartiring
-        </TypographyText>
-      </div>
-      <div>
-        <BaseButton :loading="isPendingDownload" @click="downloadPdf()" type="primary">
-          <span class="material-symbols-outlined">download</span>
-        </BaseButton>
-      </div>
-      <div class="flex justify-end">
-        <BaseTab v-model="currentTab" :items="tabItems">
-          <BaseTabItem tab-key="calendar" label="Kalendar">
-            <Teleport v-if="isLoaded" to=".main-content">
-              <BaseBox class="custom-calendar">
-                <div class="flex items-center justify-between gap-2 mb-2">
+    <div class="grid grid-cols-4 gap-4 prayer-heading">
+      <div class="flex items-center justify-between col-span-3">
+        <div class="flex flex-col gap-2">
+          <TypographyTitle :level="2"> Qazo namozlar </TypographyTitle>
+          <TypographyText type="secondary">
+            Qazo namozlaringizni ko'ring va ularni o'zgartiring
+          </TypographyText>
+        </div>
+        <div>
+          <Dropdown trigger="click">
+            <button class="cursor-pointer">
+              <span class="material-symbols-outlined"> more_horiz </span>
+            </button>
+            <template #overlay>
+              <Menu>
+                <MenuItem>
                   <BaseButton
-                    :icon="
-                      h('span', { class: 'material-symbols-outlined text-base!' }, 'arrow_back_ios')
-                    "
-                    :disabled="
-                      date.toDate().getTime() <= new Date(user?.minPrayerDate as string).getTime()
-                    "
-                    @click="handlePanelChange(dayjs(date).subtract(1, 'month'))"
-                    >Avvalgi oy</BaseButton
+                    type="ghost"
+                    size="small"
+                    :loading="isPendingDownload"
+                    @click="downloadPdf()"
                   >
-                  <span class="text-lg">
-                    {{ dayjs(date).format('MMMM YYYY') }}
-                  </span>
-                  <BaseButton
-                    :icon="
-                      h(
-                        'span',
-                        { class: 'material-symbols-outlined text-base!' },
-                        'arrow_forward_ios',
-                      )
-                    "
-                    :disabled="
-                      date.toDate().getTime() >= new Date(user?.maxPrayerDate as string).getTime()
-                    "
-                    @click="handlePanelChange(dayjs(date).add(1, 'month'))"
-                    >Keyingi oy</BaseButton
-                  >
-                </div>
+                    <template #icon>
+                      <span class="material-symbols-outlined mr-1 align-top">download</span>
+                      Yuklab olish
+                    </template>
+                  </BaseButton>
+                </MenuItem>
+                <MenuItem>
+                  <BaseButton @click="markMode = true" type="ghost" size="small">
+                    <template #icon>
+                      <span class="material-symbols-outlined mr-1 align-top">check_circle</span>
+                    </template>
+                    Belgilash
+                  </BaseButton>
+                </MenuItem>
+              </Menu>
+            </template>
+          </Dropdown>
+        </div>
+      </div>
 
-                <Calendar
-                  @select="handleSelect"
-                  @panelChange="handlePanelChange"
-                  :value="date"
-                  :locale="uzbekLocale as any"
-                  :disabledDate="disabledDate"
-                  :validRange="validRange"
-                >
-                  <template #dateCellRender="{ current }">
-                    <div class="events">
-                      <template v-for="prayer in getPrayersForDate(current)" :key="prayer.id">
-                        <div
-                          class="event-item flex items-center gap-2 px-2 py-1! rounded bg-primary/10 cursor-pointer group/item transition-colors border-l-2"
-                          :class="[prayer.isCompleted ? 'completed' : 'pending']"
-                          :title="`${prayer.prayerType?.name_uz} - ${prayer.isCompleted ? 'O\'qilgan' : 'O\'qilmagan'}`"
-                          @click="showPrayerDetails(prayer, $event)"
-                        >
-                          <span class="material-symbols-outlined">{{
-                            prayer.prayerType?.icon
-                          }}</span>
-                          <span class="event-name">{{ prayer.prayerType?.name_uz }}</span>
+      <div class="flex justify-end col-span-1">
+        <div>
+          <BaseTab v-model="currentTab" :items="tabItems">
+            <BaseTabItem tab-key="calendar" label="Kalendar">
+              <Teleport v-if="isLoaded" to=".main-content">
+                <BaseBox class="custom-calendar">
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <BaseButton
+                      :icon="
+                        h(
+                          'span',
+                          { class: 'material-symbols-outlined text-base!' },
+                          'arrow_back_ios',
+                        )
+                      "
+                      :disabled="
+                        date.toDate().getTime() <=
+                          new Date(user?.minPrayerDate as string).getTime() || markMode
+                      "
+                      @click="handlePanelChange(dayjs(date).subtract(1, 'month'))"
+                      >Avvalgi oy</BaseButton
+                    >
+                    <span class="text-lg">
+                      {{ dayjs(date).format('MMMM YYYY') }}
+                    </span>
+                    <BaseButton
+                      :icon="
+                        h(
+                          'span',
+                          { class: 'material-symbols-outlined text-base!' },
+                          'arrow_forward_ios',
+                        )
+                      "
+                      :disabled="
+                        date.toDate().getTime() >=
+                          new Date(user?.maxPrayerDate as string).getTime() || markMode
+                      "
+                      @click="handlePanelChange(dayjs(date).add(1, 'month'))"
+                      >Keyingi oy</BaseButton
+                    >
+                  </div>
+                  <CheckboxGroup v-model:value="markedPrayers">
+                    <Calendar
+                      @select="handleSelect"
+                      @panelChange="handlePanelChange"
+                      :value="date"
+                      :locale="uzbekLocale as any"
+                      :disabledDate="disabledDate"
+                      :validRange="validRange"
+                    >
+                      <template #dateCellRender="{ current }">
+                        <div class="events">
+                          <template v-for="prayer in getPrayersForDate(current)" :key="prayer.id">
+                            <div
+                              class="event-item flex items-center gap-2 px-2 py-1! rounded bg-primary/10 cursor-pointer group/item transition-colors border-l-2"
+                              :class="[prayer.isCompleted ? 'completed' : 'pending']"
+                              :title="`${prayer.prayerType?.name_uz} - ${prayer.isCompleted ? 'O\'qilgan' : 'O\'qilmagan'}`"
+                              @click="markMode ? null : showPrayerDetails(prayer, $event)"
+                            >
+                              <BaseCheckbox
+                                v-if="markMode"
+                                :value="prayer.id"
+                                :is-bordered="false"
+                              ></BaseCheckbox>
+                              <span class="material-symbols-outlined">{{
+                                prayer.prayerType?.icon
+                              }}</span>
+                              <span class="event-name">{{ prayer.prayerType?.name_uz }}</span>
+                            </div>
+                          </template>
                         </div>
                       </template>
-                    </div>
-                  </template>
-                </Calendar>
-              </BaseBox>
-            </Teleport>
-          </BaseTabItem>
-          <BaseTabItem tab-key="tree" label="Daraxt">
-            <Teleport v-if="isLoaded" to=".main-content">
-              <BaseBox class="">
-                <Forest></Forest>
-              </BaseBox>
-            </Teleport>
-          </BaseTabItem>
-        </BaseTab>
+                    </Calendar>
+                  </CheckboxGroup>
+                </BaseBox>
+              </Teleport>
+            </BaseTabItem>
+            <BaseTabItem tab-key="tree" label="Daraxt">
+              <Teleport v-if="isLoaded" to=".main-content">
+                <BaseBox class="">
+                  <Forest></Forest>
+                </BaseBox>
+              </Teleport>
+            </BaseTabItem>
+          </BaseTab>
+        </div>
       </div>
     </div>
 
@@ -246,15 +307,13 @@ const monthlyProgress = computed(() => {
                   <div class="flex items-center gap-2">
                     <span class="size-3 rounded-full bg-primary"></span>
                     <span class="text-sm text-gray-500"
-                      >O'qilgan:
-                      <span class="font-bold">{{ data?.completedCount }}</span></span
+                      >O'qilgan: <span class="font-bold">{{ data?.completedCount }}</span></span
                     >
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="size-3 rounded-full bg-red-500"></span>
                     <span class="text-sm text-gray-500"
-                      >O'qilmagan:
-                      <span class="font-bold">{{ data?.uncompletedCount }}</span></span
+                      >O'qilmagan: <span class="font-bold">{{ data?.uncompletedCount }}</span></span
                     >
                   </div>
                   <p class="text-xs text-gray-500 mt-1">
@@ -348,6 +407,14 @@ const monthlyProgress = computed(() => {
         >
       </div>
     </BaseModal>
+
+    <MarkedItemsSection
+      @success="handleMarkedSectionSuccess"
+      @cancel="handleMarkedSectionCancel"
+      @clear="markedPrayers = []"
+      v-model:visible="markMode"
+      :markedPrayers
+    ></MarkedItemsSection>
   </BaseSpin>
 </template>
 

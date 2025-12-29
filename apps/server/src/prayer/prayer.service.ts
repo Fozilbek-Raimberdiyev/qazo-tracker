@@ -1,7 +1,7 @@
 // src/qazo/qazo.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { QazoPrayer } from './entities/prayer.entity';
 import { PdfService } from './pdf.service';
 @Injectable()
@@ -180,6 +180,24 @@ export class PrayerService {
     await this.qazoRepo.update(
       { id: prayerId, userId },
       { isCompleted: true, completedAt: new Date() },
+    );
+  }
+
+  async completePrayersMultiple(
+    prayerIds: string[],
+    userId: string,
+  ): Promise<void> {
+    await this.qazoRepo.update(
+      { id: In(prayerIds), userId },
+      { isCompleted: true, completedAt: new Date() },
+    );
+  }
+
+  async uncompletePrayersMultiple(prayerIds: string[], userId: string) {
+    await this.qazoRepo.update(
+      { id: In(prayerIds), userId },
+      // @ts-expect-error
+      { isCompleted: false, completedAt: null },
     );
   }
 }

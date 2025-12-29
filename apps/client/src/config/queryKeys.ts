@@ -12,6 +12,8 @@ export const queryKeys = {
     list: 'prayer.list',
     singleComplete: 'prayer.complete',
     downloadAsPdf: 'prayer.pdf',
+    completeMultiple : "prayer.complete.multiple",
+    uncompleteMultiple : "prayer.uncomplete.multiple"
   },
   fasting: {
     generate: 'fasting.generate',

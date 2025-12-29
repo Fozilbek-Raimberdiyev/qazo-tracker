@@ -13,3 +13,8 @@ export class GenerateQazoDto {
   @IsDateString()
   toDate: string;
 }
+
+export class CompleteMultiplePrayersDto {
+  @ApiProperty({ example: ['1', '2', '3'] })
+  prayerIds: string[];
+}

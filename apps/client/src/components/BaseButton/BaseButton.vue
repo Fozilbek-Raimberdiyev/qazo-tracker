@@ -48,8 +48,6 @@ const { size = 'large', bgColor } = defineProps<PropsInterface>()
   gap: 6px;
 }
 .ant-btn {
-  padding-left: 20px !important;
-  padding-right: 20px !important;
   height : v-bind(height) !important;
 }
 .ant-btn.has-own-bg {
