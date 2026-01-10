@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { QazoPrayer } from './entities/prayer.entity';
 import { PdfService } from './pdf.service';
+import { AddNewPrayerDto } from './dto';
 @Injectable()
 export class PrayerService {
   constructor(
@@ -39,7 +40,7 @@ export class PrayerService {
   }
 
   /**
-   * fromDate va toDate oralig'ida 5 ta namoz event yaratadi
+   * fromDate va toDate oralig'ida 6 ta namoz event yaratadi
    */
   async generateQazoPrayers(
     user: { userId: string },
@@ -199,5 +200,18 @@ export class PrayerService {
       // @ts-expect-error
       { isCompleted: false, completedAt: null },
     );
+     
+  }
+
+  // add new prayer
+  async add(payload: AddNewPrayerDto, userId: string) {
+    const body = {
+      prayerTypeId: payload.prayerTypeId,
+      date: new Date(payload.date),
+      isCompleted: false,
+      userId,
+    };
+    //  this.qazoRepo.create(body)
+    await this.qazoRepo.save(body);
   }
 }

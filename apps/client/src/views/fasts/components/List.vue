@@ -141,7 +141,7 @@ function handleCompleteClick() {
                       ></div>
                       <span
                         :class="[
-                          'font-display text-5xl font-bold mt-2',
+                          'font-display 2xl:text-5xl md:text-2xl font-bold 2xl:mt-2 mt-4',
                           day.isCompleted ? 'text-primary' : 'text-slate-500',
                         ]"
                       >
@@ -186,7 +186,7 @@ function handleCompleteClick() {
             <BaseBox>
               <h3 class="text-lg font-bold text-gray-900 dark:text-white">Oylik samaradorlik</h3>
               <div class="mt-4 flex flex-col gap-6">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-2">
                   <div class="">
                     <CircleProgressBar
                       :max="100"

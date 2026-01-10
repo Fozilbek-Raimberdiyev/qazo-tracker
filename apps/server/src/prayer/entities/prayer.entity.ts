@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { PrayerTypes } from '../../prayerTypes/entities/prayerTypes.entity';
+import { PrayerType } from '../../prayerTypes/entities/prayerTypes.entity';
 
 @Entity('qazo_prayers')
 @Unique(['userId', 'date', 'prayerTypeId'])
@@ -23,9 +23,9 @@ export class QazoPrayer {
   date: Date; // ISO format: "YYYY-MM-DD"
 
   @ApiProperty({})
-  @ManyToOne(() => PrayerTypes, { eager: true })
+  @ManyToOne(() => PrayerType, { eager: true })
   @JoinColumn({ name: 'prayerTypeId' })
-  prayerType: PrayerTypes;
+  prayerType: PrayerType;
 
   @ApiProperty()
   @Column()

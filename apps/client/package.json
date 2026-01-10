@@ -20,6 +20,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@hiseb/confetti": "^2.1.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/vue-query": "^5.92.1",

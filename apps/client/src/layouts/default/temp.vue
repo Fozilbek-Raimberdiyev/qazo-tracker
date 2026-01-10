@@ -1,126 +1,253 @@
-<script setup lang="ts">
+<template>
+  <Layout class="layout">
+    <!-- Header (mobile uchun fixed top bar) -->
+    <LayoutHeader class="header">
+      <div class="header-left">
+        <menu-unfold-outlined class="trigger" @click="drawerVisible = true" />
+        <h2 style="color: white; margin: 0 16px">Qazo Tracker</h2>
+      </div>
+      <div class="header-right">
+        <Button type="text" shape="circle" style="color: white">
+          <calendar-outlined />
+        </Button>
+        <Button type="text" shape="circle" style="color: white">
+          <ellipsis-outlined />
+        </Button>
+      </div>
+    </LayoutHeader>
+
+    <!-- Asosiy content -->
+    <LayoutContent class="content">
+      <div class="page-title">
+        <h1>Qazo namozlar</h1>
+        <p>Qazo namozlaringizni ko'ring va ularni o'zgartiring</p>
+      </div>
+
+      <!-- Oy taqvimi -->
+      <Card class="calendar-card">
+        <Calendar v-model:value="calendarValue" fullscreen @select="onDateSelect">
+          <template #dateCellRender="{ current }">
+            <div class="namoz-day">
+              <div class="day-number">{{ current.date() }}</div>
+              <ul class="namoz-list">
+                <li><sunny-outlined class="bomdod" /> Bomdod</li>
+                <li><sun-outlined class="peshin" /> Peshin</li>
+                <li><cloud-outlined class="asr" /> Asr</li>
+                <li><moon-outlined class="shom" /> Shom</li>
+                <li><fire-outlined class="xufton" /> Xufton</li>
+                <li><fire-outlined class="vitr" /> Vitr</li>
+              </ul>
+            </div>
+          </template>
+          <template #headerRender="{ value }">
+            <div class="calendar-header">
+              <left-outlined @click="prevMonth" />
+              <span>{{ value?.format('MMMM YYYY') }}</span>
+              <right-outlined @click="nextMonth" />
+            </div>
+          </template>
+        </Calendar>
+      </Card>
+
+      <!-- Oylik samaradorlik -->
+      <Card class="stats-card">
+        <h3>Oylik samaradorlik</h3>
+        <Progress type="circle" :percent="0" :width="120" strokeColor="#ff4d4f">
+          <template #format>
+            <div>
+              <div style="font-size: 24px">0%</div>
+              <div style="font-size: 12px; color: #999">O'qilgan: 0</div>
+              <div style="font-size: 12px; color: #ff4d4f">Qoldiq: 186</div>
+            </div>
+          </template>
+        </Progress>
+        <div class="total">Jami namozlar: 186</div>
+      </Card>
+
+      <!-- Namoz turlari statistikasi -->
+      <Card class="prayer-stats">
+        <h3>Namoz turlari</h3>
+        <List item-layout="horizontal">
+          <ListItem>
+            <ListItemMeta title="Bomdod" />
+            <template #extra>0%</template>
+          </ListItem>
+          <ListItem>
+            <ListItemMeta title="Peshin" />
+            <template #extra>0%</template>
+          </ListItem>
+          <ListItem>
+            <ListItemMeta title="Asr" />
+            <template #extra>0%</template>
+          </ListItem>
+          <ListItem>
+            <ListItemMeta title="Shom" />
+            <template #extra>0%</template>
+          </ListItem>
+          <ListItem>
+            <ListItemMeta title="Xufton" />
+            <template #extra>0%</template>
+          </ListItem>
+          <ListItem>
+            <ListItemMeta title="Vitr" />
+            <template #extra>0%</template>
+          </ListItem>
+        </List>
+      </Card>
+    </LayoutContent>
+
+    <!-- Sidebar Drawer (mobile uchun) -->
+    <Drawer
+      title="Menyu"
+      placement="left"
+      :visible="drawerVisible"
+      @close="drawerVisible = false"
+      :width="280"
+    >
+      <Menu mode="inline" :selected-keys="['qazo-namozlar']">
+        <MenuItem key="dashboard">
+          <dashboard-outlined />
+          Dashboard
+        </MenuItem>
+        <MenuItem key="qazo-namozlar">
+          <clock-circle-outlined />
+          Qazo namozlar
+        </MenuItem>
+        <MenuItem key="settings">
+          <setting-outlined />
+          Sozlamalar
+        </MenuItem>
+      </Menu>
+      <div class="user-info">
+        <Avatar :size="64" icon="user-outlined" />
+        <p>Nilufar Raimberdiyeva</p>
+        <p>nilufar@gmail.com</p>
+      </div>
+    </Drawer>
+  </Layout>
+</template>
+
+<script setup>
 import { ref } from 'vue'
-import { useMenuItemsList } from './composables/useMenuItemsList'
+import {
+  MenuUnfoldOutlined,
+  CalendarOutlined,
+  EllipsisOutlined,
+  LeftOutlined,
+  RightOutlined,
+  CloudOutlined,
+  FireOutlined,
+  DashboardOutlined,
+  ClockCircleOutlined,
+  SettingOutlined,
+  UserOutlined,
+} from '@ant-design/icons-vue'
+import {
+  Layout,
+  LayoutHeader,
+  LayoutContent,
+  Card,
+  Calendar,
+  Progress,
+  List,
+  Drawer,
+  Menu,
+  Button,
+  Avatar,
+  ListItem,
+  ListItemMeta,
+  MenuItem,
+} from 'ant-design-vue'
 
-const { menuItemsList } = useMenuItemsList()
-const isExpanded = ref(true)
+const drawerVisible = ref(false)
+const calendarValue = ref(null)
 
-const toggleSidebar = () => {
-  isExpanded.value = !isExpanded.value
+const prevMonth = () => {
+  /* logic */
+}
+const nextMonth = () => {
+  /* logic */
+}
+const onDateSelect = (date) => {
+  console.log('Tanlangan kun:', date)
 }
 </script>
 
-<template>
-  <div class="flex min-h-screen font-display bg-background-light dark:bg-background-dark">
-    <!-- Side Navigation Bar -->
-    <aside
-      :class="[
-        'fixed top-0 left-0 h-screen shrink-0 p-4 flex flex-col justify-between sidebar border-r border-solid border-(--color-border-light) dark:border-(--color-border-dark) transition-all duration-300 z-10',
-        isExpanded ? 'w-64' : 'w-20',
-      ]"
-    >
-      <!-- Toggle Button - Positioned on border -->
-      <button
-        @click="toggleSidebar"
-        class="absolute top-1/2 -right-3 transform -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-white dark:bg-gray-800 border border-solid border-(--color-border) rounded-full shadow-md hover:shadow-lg transition-all dark:text-white/70 dark:hover:text-white z-20"
-      >
-        <span class="material-symbols-outlined text-base">
-          {{ isExpanded ? 'chevron_left' : 'chevron_right' }}
-        </span>
-      </button>
-
-      <div class="flex flex-col gap-8">
-        <div class="flex items-center gap-3 px-3 pt-3">
-          <div class="bg-primary/20 rounded-lg p-2">
-            <span class="material-symbols-outlined text-primary text-2xl">mosque</span>
-          </div>
-          <h2
-            v-show="isExpanded"
-            class="dark:text-white text-lg font-bold whitespace-nowrap overflow-hidden transition-all"
-          >
-            Qazo Tracker
-          </h2>
-        </div>
-
-        <nav class="flex flex-col gap-2">
-          <RouterLink
-            v-for="(item, index) in menuItemsList"
-            :key="index"
-            class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            :to="item.path"
-            :title="!isExpanded ? item.label : ''"
-          >
-            <span class="material-symbols-outlined">{{ item.icon }}</span>
-            <span
-              v-show="isExpanded"
-              class="text-sm font-medium leading-normal whitespace-nowrap overflow-hidden"
-            >
-              {{ item.label }}
-            </span>
-          </RouterLink>
-        </nav>
-      </div>
-
-      <div class="flex flex-col gap-1 pb-2">
-        <div
-          :class="[
-            'flex items-center gap-4 p-3 border-t border-white/10',
-            !isExpanded && 'justify-center',
-          ]"
-        >
-          <div
-            class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-            data-alt="User avatar image"
-            style="
-              background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCcTQnXUatckdJ09_7CEZcm5-n85ZHypQ7Y7Am49kc0N7wdbuTpymfkH-CmPPOsOKPx1HFBwhixLYQQu-w_28P5xE6M3BlewnspqPS0rGwN4OcWHZvfAtMebCkkZ4fye7XUPmIEFnqaKB3iwE7c_zLTWDUZZNgceQQ6jrW4JTeaznj7S8PeVHr-p-cq8G4vIeU5pM9j0UwUsnHu17duPXUvLzDUuytrxlKkoWdbbcfm384tAFUQnzv2GwNPwC-Payl__xht2dgb3GY');
-            "
-          ></div>
-          <div v-show="isExpanded" class="flex flex-col overflow-hidden">
-            <h3 class="dark:text-white text-base font-medium leading-normal whitespace-nowrap">
-              Aisha Khan
-            </h3>
-            <span class="dark:text-white/60 text-sm font-normal leading-normal whitespace-nowrap">
-              aisha.khan@email.com
-            </span>
-          </div>
-        </div>
-
-        <RouterLink
-          to="/settings"
-          class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 rounded-lg transition-colors"
-          :title="!isExpanded ? 'Settings' : ''"
-        >
-          <span class="material-symbols-outlined">settings</span>
-          <span v-show="isExpanded" class="text-sm font-medium leading-normal whitespace-nowrap">
-            Settings
-          </span>
-        </RouterLink>
-
-        <RouterLink  to="/auth/login"
-          @click="$router.push('/auth/login')"
-          class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-          :title="!isExpanded ? 'Log Out' : ''"
-        >
-          <span class="material-symbols-outlined">logout</span>
-          <span v-show="isExpanded" class="text-sm font-medium leading-normal whitespace-nowrap dark:text-white/70">
-            Log Out
-          </span>
-        </RouterLink>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main :class="['w-full py-6 transition-all duration-300', isExpanded ? 'ml-64' : 'ml-20']">
-      <RouterView></RouterView>
-    </main>
-  </div>
-</template>
-
-<style>
-.router-link-active,
-.router-link-exact-active {
-  background-color: var(--color-primary);
-  border-radius: 8px;
+<style scoped>
+.layout {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #001529;
+  padding: 0 16px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+}
+.trigger {
+  font-size: 20px;
   color: white;
+  cursor: pointer;
+}
+.content {
+  padding: 70px 16px 16px;
+}
+.page-title {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.calendar-card {
+  margin-bottom: 24px;
+}
+.namoz-day {
+  text-align: center;
+}
+.day-number {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.namoz-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+}
+.namoz-list li {
+  margin: 4px 0;
+}
+.stats-card {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.total {
+  margin-top: 16px;
+  font-size: 16px;
+}
+.prayer-stats {
+  margin-bottom: 80px;
+}
+.user-info {
+  position: absolute;
+  bottom: 24px;
+  text-align: center;
+  width: 100%;
+  left: 0;
+  padding: 0 24px;
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
 }
 </style>

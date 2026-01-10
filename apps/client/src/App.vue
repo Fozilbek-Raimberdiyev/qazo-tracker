@@ -12,5 +12,5 @@ initTheme()
   <ConfigProvider :theme="themeConfig">
      <RouterView></RouterView>
   </ConfigProvider>
-<VueQueryDevtools initialIsOpen></VueQueryDevtools>
+<VueQueryDevtools initialIsOpen buttonPosition="top-right" ></VueQueryDevtools>
 </template>

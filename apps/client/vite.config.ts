@@ -72,7 +72,7 @@ export default defineConfig({
       },
 
       devOptions: {
-        enabled: true, // developmentda ham PWA ni sinab ko'rish uchun
+        enabled: false, // developmentda ham PWA ni sinab ko'rish uchun
       },
     }),
   ],

@@ -4,6 +4,8 @@ import { provide, ref, watch } from 'vue'
 interface TabItem {
   key: string | number
   label: string
+  visible?: boolean
+  disabled?: boolean
 }
 
 interface Props {
@@ -47,7 +49,7 @@ const isActive = (key: string | number) => {
   <div class="segmented-tabs">
     <!-- Tab Headers -->
     <div class="segmented-control">
-      <button
+      <button v-show="tab.visible" :disabled="tab.disabled"
         v-for="tab in items"
         :key="tab.key"
         :class="['segmented-item', { active: isActive(tab.key) }]"

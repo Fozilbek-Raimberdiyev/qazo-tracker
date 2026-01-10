@@ -1,4 +1,6 @@
+import {useDeviceStore} from "@/stores/device.store"
 export function useCalendarData() {
+  const {isMobile} = useDeviceStore()
   const uzbekLocale = {
   lang: {
     locale: 'uz',
@@ -30,7 +32,7 @@ export function useCalendarData() {
     nextDecade: "Keyingi o'n yillik",
     previousCentury: 'Oldingi asr',
     nextCentury: 'Keyingi asr',
-    shortWeekDays: [
+    shortWeekDays: isMobile ? ['Ya', 'Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha'] : [
       'Yakshanba',
       'Dushanba',
       'Seshanba',

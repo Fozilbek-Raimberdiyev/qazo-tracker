@@ -16,10 +16,10 @@ const { mutateAsync: complete, isPending: completePending } = useMutation({
   mutationFn: () => {
     return usePut('/api/prayer/complete', { prayerIds: markedPrayers })
   },
-  onSuccess: () => {
-    emit('success')
+  onSuccess: async () => {
     showSuccessMessage('Muvaffaqqiyatli saqlandi')
-    queryClient.invalidateQueries({ queryKey: [queryKeys.prayer.list] })
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.prayer.list] })
+    emit('success')
   },
 })
 
@@ -32,7 +32,7 @@ const { mutateAsync: uncomplete, isPending: uncompletePending } = useMutation({
   onSuccess: () => {
     emit('success')
     showSuccessMessage('Muvaffaqqiyatli saqlandi')
-    queryClient.invalidateQueries({ queryKey: [queryKeys.prayer.uncompleteMultiple] })
+    queryClient.invalidateQueries({ queryKey: [queryKeys.prayer.list] })
   },
 })
 </script>

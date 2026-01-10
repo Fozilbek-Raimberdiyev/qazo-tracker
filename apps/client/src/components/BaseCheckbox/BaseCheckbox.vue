@@ -61,7 +61,7 @@ const handleChange = (e: CheckboxChangeEvent) => {
     v-bind="attrs"
     @change="handleChange"
     :class="isBordered ? 'border border-[#E3E4E7] border-solid h-10' : ''"
-    class="bg-white rounded-lg  px-1! flex items-center!"
+    class=" rounded-lg  px-1! flex items-center!"
   >
     <slot>
          {{ label }}

@@ -55,25 +55,24 @@ const router = createRouter({
           name: 'register',
           component: () => import('@/views/auth/register/index.vue'),
         },
-
       ],
     },
-     {
-          path: '/oauth',
-          name: 'oauth',
-          component: {
-            render() {
-              return h(resolveComponent('router-view'))
-            },
-          },
-          children : [
-            {
-              path : "success",
-              name : "success",
-              component : () => import("@/views/auth/oauth/success.vue")
-            }
-          ]
+    {
+      path: '/oauth',
+      name: 'oauth',
+      component: {
+        render() {
+          return h(resolveComponent('router-view'))
         },
+      },
+      children: [
+        {
+          path: 'success',
+          name: 'success',
+          component: () => import('@/views/auth/oauth/success.vue'),
+        },
+      ],
+    },
   ],
 })
 

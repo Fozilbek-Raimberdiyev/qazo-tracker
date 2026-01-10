@@ -82,7 +82,7 @@ function handleFinish() {
         <div class="grid grid-cols-2 gap-6 mb-2">
           <!-- Text Field: Start Date -->
           <FormItem name="fromYear">
-            <BaseFormLabel for="fromYear" required>Boshlanish tili</BaseFormLabel>
+            <BaseFormLabel for="fromYear" required>Boshlanish yili</BaseFormLabel>
             <BaseSelect
               :options="years"
               placeholder="Yil tanlang"

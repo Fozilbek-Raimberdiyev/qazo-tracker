@@ -14,7 +14,11 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PrayerService } from './prayer.service';
-import { CompleteMultiplePrayersDto, GenerateQazoDto } from './dto';
+import {
+  AddNewPrayerDto,
+  CompleteMultiplePrayersDto,
+  GenerateQazoDto,
+} from './dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 @ApiTags('Prayer')
 @Controller('prayer')
@@ -98,5 +102,16 @@ export class PrayerController {
       req.user.userId,
     );
     return { success: true };
+  }
+
+  @Post('add')
+  @ApiOperation({ summary: "Yangi qazo namozini qo'shish" })
+  async addNewPrayer(
+    @Req() req,
+    @Body() body: AddNewPrayerDto,
+    @Res() res: Response,
+  ) {
+    return this.qazoService.add(body, req.user.userId);
+
   }
 }

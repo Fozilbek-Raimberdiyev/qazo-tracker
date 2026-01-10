@@ -18,3 +18,11 @@ export class CompleteMultiplePrayersDto {
   @ApiProperty({ example: ['1', '2', '3'] })
   prayerIds: string[];
 }
+
+export class AddNewPrayerDto {
+  @ApiProperty({ example: '1' })
+  prayerTypeId: string;
+
+  @ApiProperty({ example: '01.01.2025' })
+  date: string;
+}
