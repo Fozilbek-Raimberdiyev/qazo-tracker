@@ -62,7 +62,7 @@ export function useRegisterForm() {
     onSuccess : (res:AxiosResponse) => {
       setLocalStorage('access_token', res.data.accessToken)
       showSuccessMessage('Tizimga muvaffaqiyatli kirildi')
-      router.push('/dashboard')
+      router.push('/prayers')
     }
   })
 
