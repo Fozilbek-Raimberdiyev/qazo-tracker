@@ -4,7 +4,7 @@ import type { Prayer, PrayerType } from '@/types/prayer.types'
 import { useQuery } from '@tanstack/vue-query'
 import {useUserStore} from "@/stores/user.store"
 import dayjs, { Dayjs } from 'dayjs'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 interface CountByType {
   completed: number
@@ -34,10 +34,15 @@ export function useList() {
       return data.data
     },
   })
+  const monthlyProgress = computed(() => {
+  if (!data.value) return 0
+  return Math.floor((Number(data.value?.completedCount) / Number(data.value?.totalPrayers)) * 100)
+})
 
   return {
     data,
     isPending,
     date,
+    monthlyProgress
   }
 }
