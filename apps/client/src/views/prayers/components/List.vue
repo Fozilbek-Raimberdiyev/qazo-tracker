@@ -168,7 +168,7 @@ function handleMarkedSectionClear() {
 </script>
 
 <template>
-  <BaseSpin :spinning="isPending">
+  <BaseSpin :spinning="isPending || isPendingDownload">
     <!-- PageHeading -->
     <div class="grid grid-cols-4 gap-4 prayer-heading">
       <div class="flex items-center justify-between col-span-3">

@@ -2,28 +2,28 @@
 import BaseBox from '@/components/BaseBox.vue'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import confetti from '@hiseb/confetti'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { CircleProgressBar } from 'circle-progress.vue'
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useList } from '../composables/useList'
-import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user.store'
 import { hexToRgba } from '@/utils/color.util'
 import { useCompleteFastingMutation } from '../composables/useCompleteFastingMutation'
 import { storeToRefs } from 'pinia'
 import dayjs from 'dayjs'
+import { useDeviceStore } from '@/stores/device.store'
 import BaseSpin from '@/components/BaseSpin/BaseSpin.vue'
 import { Collapse, CollapsePanel, Tag, TypographyText, TypographyTitle } from 'ant-design-vue'
 import BaseModal from '@/components/BaseModal/BaseModal.vue'
 import type { IFasting } from '@/types/fasting.types'
+import MonthlyStatistic from './MonthlyStatistic.vue'
+import ActionButtons from './ActionButtons.vue'
 const { user } = storeToRefs(useUserStore())
 const { fastingList: data, year, isPending, data: stats } = useList()
 const { isPending: isPendingComplete, mutateAsync } = useCompleteFastingMutation()
 const fastingMinYear = computed(() => {
   return new Date(user.value?.minFastingDate || '').getFullYear()
 })
-const { primaryColor } = storeToRefs(useThemeStore())
+const isVisibleStatistic = ref(false)
+const { isMobile } = storeToRefs(useDeviceStore())
 const fastingMaxYear = computed(() => {
   return new Date(user.value?.maxFastingDate || '').getFullYear()
 })
@@ -66,14 +66,26 @@ function handleCompleteClick() {
 
 <template>
   <BaseSpin :spinning="isPending">
-    <div class="flex flex-col gap-2 mb-8">
-      <TypographyTitle :level="2"> Qazo ro'zalar </TypographyTitle>
-      <TypographyText type="secondary">
-        Qazo ro'zalaringizni ko'ring va ularni o'zgartiring
-      </TypographyText>
-    </div>
-    <div class="grid lg:grid-cols-4 gap-4">
-      <div class="lg:col-span-3 col-span-4">
+    <div class="grid lg:grid-cols-4 gap-4 grid-cols-2" :style="{marginBottom : isMobile ? '64px' : ''}">
+      <div class="lg:col-span-3 col-span-3">
+        <div class="flex justify-between items-center gap-2">
+          <div class="flex flex-col gap-2">
+            <TypographyTitle :level="2"> Qazo ro'zalar </TypographyTitle>
+            <TypographyText type="secondary">
+              Qazo ro'zalaringizni ko'ring va ularni o'zgartiring
+            </TypographyText>
+          </div>
+          <div>
+            <ActionButtons v-if="!isMobile" view-mode="dropdown"></ActionButtons>
+          </div>
+        </div>
+        <div class="mb-4">
+          <ActionButtons
+            @stats="isVisibleStatistic = true"
+            v-if="isMobile"
+            view-mode="button"
+          ></ActionButtons>
+        </div>
         <BaseBox>
           <!-- Calendar Container -->
           <div>
@@ -81,9 +93,15 @@ function handleCompleteClick() {
             <div class="">
               <!-- Calendar Header -->
               <div class="py-6 px-4">
-                <div class="flex justify-between items-center">
-                  <BaseButton @click="year--" :disabled="year === fastingMinYear">
-                    Avvalgi yil
+                <div class="flex justify-between items-center flex-wrap">
+                  <BaseButton
+                    :icon="
+                      h('span', { class: 'material-symbols-outlined text-base!' }, 'arrow_back_ios')
+                    "
+                    @click="year--"
+                    :disabled="year === fastingMinYear"
+                  >
+                    <span v-if="!isMobile"> Avvalgi yil </span>
                   </BaseButton>
                   <div class="text-center">
                     <h3 class="font-display text-3xl font-bold text-primary tracking-widest">
@@ -97,15 +115,25 @@ function handleCompleteClick() {
                       <span class="h-px w-8 bg-primary/50"></span>
                     </div>
                   </div>
-                  <BaseButton @click="year++" :disabled="year === fastingMaxYear">
-                    Keyingi yil
+                  <BaseButton
+                    :icon="
+                      h(
+                        'span',
+                        { class: 'material-symbols-outlined text-base!' },
+                        'arrow_forward_ios',
+                      )
+                    "
+                    @click="year++"
+                    :disabled="year === fastingMaxYear"
+                  >
+                    <span v-if="!isMobile"> Keyingi yil </span>
                   </BaseButton>
                 </div>
               </div>
 
               <!-- Days Grid -->
               <div
-                class="p-6 md:p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8"
+                class="md:p-10 grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8"
               >
                 <div
                   v-for="day in data"
@@ -141,7 +169,7 @@ function handleCompleteClick() {
                       ></div>
                       <span
                         :class="[
-                          'font-display 2xl:text-5xl md:text-2xl font-bold 2xl:mt-2 mt-4',
+                          'font-display 2xl:text-5xl md:text-2xl text-xs font-bold 2xl:mt-2 mt-4',
                           day.isCompleted ? 'text-primary' : 'text-slate-500',
                         ]"
                       >
@@ -149,7 +177,7 @@ function handleCompleteClick() {
                       </span>
                       <span
                         :class="[
-                          'text-xs font-bold tracking-[0.2em] uppercase mt-1',
+                          'lg:text-xs text-[10px] font-bold tracking-[0.2em] uppercase mt-1',
                           day.isCompleted ? 'text-slate-300' : 'text-slate-600',
                         ]"
                       >
@@ -180,50 +208,23 @@ function handleCompleteClick() {
           </div>
         </BaseBox>
       </div>
-      <div class="lg:col-span-1">
-        <div class="lg:col-span-1 sticky top-0 h-full">
+      <div class="lg:col-span-1 col-span-2" v-if="!isMobile">
+        <div class="lg:col-span-1 col-span-1 sticky top-0 h-full">
           <div class="space-y-6">
             <BaseBox>
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Oylik samaradorlik</h3>
-              <div class="mt-4 flex flex-col gap-6">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="">
-                    <CircleProgressBar
-                      :max="100"
-                      :color-unfilled="primaryColor"
-                      :value="monthlyProgress"
-                    >
-                      <span class="text-xl font-bold text-gray-500 dark:text-white"
-                        >{{ monthlyProgress }}%</span
-                      >
-                    </CircleProgressBar>
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                      <span class="size-3 rounded-full bg-primary"></span>
-                      <span class="text-sm text-gray-500"
-                        >Tutilgan: <span class="font-bold">{{ stats?.completedCount }}</span></span
-                      >
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="size-3 rounded-full bg-red-500"></span>
-                      <span class="text-sm text-gray-500"
-                        >Tutilmagan:
-                        <span class="font-bold">{{ stats?.uncompletedCount }}</span></span
-                      >
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">
-                      Jami ro'zalar: <span class="">{{ stats?.totalCount }}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <MonthlyStatistic :monthlyProgress :stats componentMode="plain"></MonthlyStatistic>
             </BaseBox>
           </div>
         </div>
       </div>
     </div>
 
+    <MonthlyStatistic
+      v-model:visible="isVisibleStatistic"
+      component-mode="modal"
+      :monthly-progress
+      :stats
+    ></MonthlyStatistic>
     <BaseModal
       v-model="showModal"
       :title="'Ramazon ' + (selectedDay ? selectedDay.day_of_ramadan + '-kun' : '')"
