@@ -1,17 +1,35 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useList } from '../composables/useList'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { CircleProgressBar } from 'circle-progress.vue'
 import { useThemeStore } from '@/stores/theme'
-const { data, monthlyProgress } = useList()
+import { watch } from 'vue'
+import BaseDrawer from '@/components/BaseDrawer/BaseDrawer.vue'
 const { primaryColor } = storeToRefs(useThemeStore())
+const model = defineModel<boolean>('visible')
+interface Props {
+  componentMode: 'modal' | 'plain',
+  monthlyProgress: number
+  data ?: any
+}
+
+const { componentMode } = defineProps<Props>()
+
+watch(
+  () => componentMode,
+  (newVal) => {
+    if (newVal === 'plain') {
+      model.value = true
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-  <div>
-    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Oylik samaradorlik</h3>
+  <component height="70%" placement="bottom" :is="componentMode === 'modal' ? BaseDrawer : 'div'" v-model="model" title="Oylik samaradorlik">
+    <h3 class="text-lg font-bold text-gray-900 dark:text-white" v-if="componentMode==='plain'">Oylik samaradorlik</h3>
     <div class="mt-4 flex flex-col gap-6">
       <div class="flex items-center justify-between">
         <div class="">
@@ -61,5 +79,5 @@ const { primaryColor } = storeToRefs(useThemeStore())
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>

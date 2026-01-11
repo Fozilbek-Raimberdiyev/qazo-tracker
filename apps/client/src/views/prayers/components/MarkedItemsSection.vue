@@ -4,6 +4,9 @@ import { queryKeys } from '@/config/queryKeys'
 import { usePut } from '@/services/api.service'
 import { showSuccessMessage } from '@/utils/message.util'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useDeviceStore } from '@/stores/device.store'
+import { storeToRefs } from 'pinia'
+const { isMobile } = storeToRefs(useDeviceStore())
 const visible = defineModel('visible')
 const queryClient = useQueryClient()
 interface Props {
@@ -40,8 +43,9 @@ const { mutateAsync: uncomplete, isPending: uncompletePending } = useMutation({
 <template>
   <Transition name="moveToTop">
     <div
+      :style="{ bottom: isMobile ? '0' : '32px' }"
       v-if="visible"
-      class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-background-light dark:bg-background-dark border border-(--color-border-light) dark:border-(--color-border-dark) rounded-xl px-4 py-4 z-50 flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300"
+      class="fixed left-1/2 -translate-x-1/2 bg-white dark:bg-background-dark border border-(--color-border-light) dark:border-(--color-border-dark) rounded-xl px-4 py-4 z-50 flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300"
     >
       <div class="flex items-center gap-3 pr-4 border-r border-white/10">
         <span class="font-medium text-wrap text-sm"
@@ -49,7 +53,7 @@ const { mutateAsync: uncomplete, isPending: uncompletePending } = useMutation({
         >
         <button @click="emit('clear')" class="text-xs underline cursor-pointer">Tozalash</button>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <BaseButton
           :disabled="!markedPrayers.length"
           :loading="completePending"

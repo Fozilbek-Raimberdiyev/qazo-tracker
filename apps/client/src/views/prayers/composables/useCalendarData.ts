@@ -1,6 +1,7 @@
 import {useDeviceStore} from "@/stores/device.store"
+import { storeToRefs } from "pinia"
 export function useCalendarData() {
-  const {isMobile} = useDeviceStore()
+  const {isMobile} = storeToRefs(useDeviceStore())
   const uzbekLocale = {
   lang: {
     locale: 'uz',

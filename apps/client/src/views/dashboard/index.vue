@@ -46,7 +46,7 @@ const modes = computed(() => {
 
 <template>
   <div v-if="!user?.hasQazoFasting && !user?.hasQazoPrayers" class="flex items-center flex-col h-[calc(100vh-64px)] justify-center">
-    <Empty description="Sizning tizimda qazo namozlaringiz yoki qazo ro'zalaringiz mavjud emas"></Empty>
+    <Empty description="Sizning tizimda qazo namozlaringiz yoki ro'zalaringiz mavjud emas"></Empty>
   </div>
   <div v-else>
     <BaseTab :items="modes" v-model="dashboardMode"></BaseTab>

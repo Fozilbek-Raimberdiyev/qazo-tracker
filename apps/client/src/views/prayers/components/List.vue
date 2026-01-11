@@ -12,9 +12,6 @@ import {
   Alert,
   Descriptions,
   DescriptionsItem,
-  Dropdown,
-  MenuItem,
-  Menu,
   CheckboxGroup,
 } from 'ant-design-vue'
 import BaseTab from '@/components/BaseTab/BaseTab.vue'
@@ -40,11 +37,13 @@ import BaseCheckbox from '@/components/BaseCheckbox/BaseCheckbox.vue'
 import AddPrayerForm from './AddPrayerForm.vue'
 import BaseFormLabel from '@/components/BaseFormLabel/BaseFormLabel.vue'
 import Statistic from './Statistic.vue'
+import ActionButtons from './ActionButtons.vue'
 const { user } = storeToRefs(useUserStore())
 const { uzbekLocale } = useCalendarData()
 const markMode = ref(false)
 const markedPrayers = ref<string[]>([])
 const isVisibleAddPrayer = ref<boolean>(false)
+const isVisibleStatistic = ref<boolean>(false)
 const { isPending: isPendingDownload, mutateAsync: downloadPdf } =
   useDownloadAsPdfAllPrayersMutation()
 const { isMobile } = storeToRefs(useDeviceStore())
@@ -188,45 +187,8 @@ function handleMarkedSectionClear() {
             <BaseFormLabel for="isMarkedAll"> Hammasini belgilash(oylik) </BaseFormLabel>
           </div>
         </div>
-        <div>
-          <Dropdown trigger="click">
-            <button class="cursor-pointer">
-              <span class="material-symbols-outlined"> more_horiz </span>
-            </button>
-            <template #overlay>
-              <Menu>
-                <MenuItem>
-                  <BaseButton @click="isVisibleAddPrayer = true" size="small" type="ghost">
-                    <template #icon>
-                      <span class="material-symbols-outlined mr-1 align-top">add</span>
-                    </template>
-                    Yangi qo'shish
-                  </BaseButton>
-                </MenuItem>
-                <MenuItem>
-                  <BaseButton
-                    type="ghost"
-                    size="small"
-                    :loading="isPendingDownload"
-                    @click="downloadPdf()"
-                  >
-                    <template #icon>
-                      <span class="material-symbols-outlined mr-1 align-top">download</span>
-                      Yuklab olish
-                    </template>
-                  </BaseButton>
-                </MenuItem>
-                <MenuItem>
-                  <BaseButton @click="markMode = true" type="ghost" size="small">
-                    <template #icon>
-                      <span class="material-symbols-outlined mr-1 align-top">check_circle</span>
-                    </template>
-                    Belgilash
-                  </BaseButton>
-                </MenuItem>
-              </Menu>
-            </template>
-          </Dropdown>
+        <div v-if="!isMobile">
+          <ActionButtons view-mode="dropdown" @add="isVisibleAddPrayer = true" @download="downloadPdf()" @mark="markMode=true"></ActionButtons>
         </div>
       </div>
 
@@ -294,7 +256,7 @@ function handleMarkedSectionClear() {
                               ></BaseCheckbox>
 
                               <div>
-                                <span class="material-symbols-outlined">
+                                <span class="material-symbols-outlined" :class="prayer.isCompleted ? 'text-[#13ec5b]' : 'text-[#d1d5db]'">
                                   {{ prayer.prayerType.icon }}
                                 </span>
                               </div>
@@ -336,18 +298,19 @@ function handleMarkedSectionClear() {
         </div>
       </div>
     </div>
-
-    <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-4 relative">
+          <div class="mt-2">
+        <ActionButtons v-if="isMobile" view-mode="button" @add="isVisibleAddPrayer = true" @download="downloadPdf()" @mark="markMode=true" @stats="isVisibleStatistic = true"></ActionButtons>
+      </div>
+    <div class="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-4 relative">
       <div class="main-content lg:col-span-3"></div>
-      <div class="lg:col-span-1 sticky top-0 h-full">
+      <div class="lg:col-span-1 sticky top-0 h-full" v-if="!isMobile">
         <div class="space-y-6">
           <BaseBox>
-           <Statistic></Statistic>
+            <Statistic :data :monthly-progress :key="date.month()" component-mode="plain"></Statistic>
           </BaseBox>
         </div>
       </div>
     </div>
-
     <!-- Prayer Details Modal -->
     <BaseModal
       v-model="isModalVisible"
@@ -405,7 +368,7 @@ function handleMarkedSectionClear() {
         >
       </div>
     </BaseModal>
-
+    <Statistic :data :monthly-progress :key="date.month()" component-mode="modal" v-model:visible="isVisibleStatistic"></Statistic>
     <MarkedItemsSection
       @success="handleMarkedSectionSuccess"
       @cancel="handleMarkedSectionCancel"
@@ -414,7 +377,7 @@ function handleMarkedSectionClear() {
       :markedPrayers
     ></MarkedItemsSection>
 
-    <BaseModal width="50%" v-model="isVisibleAddPrayer" title="Yangi qo'shish">
+    <BaseModal v-model="isVisibleAddPrayer" title="Yangi qo'shish">
       <AddPrayerForm></AddPrayerForm>
     </BaseModal>
   </BaseSpin>
@@ -439,6 +402,7 @@ function handleMarkedSectionClear() {
   padding: 2px;
   height: 100%;
   overflow: hidden;
+  text-align: right;
 }
 
 .event-item:hover {
@@ -507,6 +471,16 @@ function handleMarkedSectionClear() {
 }
 
 :global(.ant-picker-calendar.ant-picker-calendar-full .ant-picker-calendar-date) {
+  padding: 0 !important;
+}
+
+:global(.ant-picker-calendar-header) {
+    display: flex !important;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+:global(.ant-picker-calendar) {
   padding: 0 !important;
 }
 </style>
