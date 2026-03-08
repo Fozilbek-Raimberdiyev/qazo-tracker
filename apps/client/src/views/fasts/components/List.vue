@@ -3,10 +3,13 @@ import BaseBox from '@/components/BaseBox.vue'
 import BaseButton from '@/components/BaseButton/BaseButton.vue'
 import confetti from '@hiseb/confetti'
 import { computed, h, ref } from 'vue'
+import BaseCheckbox from '@/components/BaseCheckbox/BaseCheckbox.vue'
+import BaseFormLabel from '@/components/BaseFormLabel/BaseFormLabel.vue'
 import { useList } from '../composables/useList'
 import { useUserStore } from '@/stores/user.store'
 import { hexToRgba } from '@/utils/color.util'
 import { useCompleteFastingMutation } from '../composables/useCompleteFastingMutation'
+import { useDownloadAsPdfAllFastingsMutation } from '../composables/useDownloadAsPdfAllFastingsMutation'
 import { storeToRefs } from 'pinia'
 import dayjs from 'dayjs'
 import { useDeviceStore } from '@/stores/device.store'
@@ -16,13 +19,20 @@ import BaseModal from '@/components/BaseModal/BaseModal.vue'
 import type { IFasting } from '@/types/fasting.types'
 import MonthlyStatistic from './MonthlyStatistic.vue'
 import ActionButtons from './ActionButtons.vue'
+import MarkedFastingSection from './MarkedFastingSection.vue'
+import AddFastingModal from './AddFastingModal.vue'
 const { user } = storeToRefs(useUserStore())
 const { fastingList: data, year, isPending, data: stats } = useList()
 const { isPending: isPendingComplete, mutateAsync } = useCompleteFastingMutation()
+const { mutateAsync: downloadPdf } = useDownloadAsPdfAllFastingsMutation()
 const fastingMinYear = computed(() => {
   return new Date(user.value?.minFastingDate || '').getFullYear()
 })
 const isVisibleStatistic = ref(false)
+const isVisibleAdd = ref(false)
+const markMode = ref(false)
+const markedFastings = ref<string[]>([])
+const isMarkedAll = ref(false)
 const { isMobile } = storeToRefs(useDeviceStore())
 const fastingMaxYear = computed(() => {
   return new Date(user.value?.maxFastingDate || '').getFullYear()
@@ -47,8 +57,34 @@ const iftorlikDuosi = `Аллоҳумма лака сумту ва бика ам
 (Маъноси: Эй Аллоҳ, Сен учун рўза тутдим, Сенга иймон келтирдим, Сенга таваккал қилдим ва Сенинг ризқинг билан ифтор қилдим. Энг раҳмли, раҳматинг ила илдим-кейинлик қилган гуноҳларимни мағфират қил.)`
 
 const openDayModal = (day: IFasting) => {
+  if (markMode.value) {
+    const idx = markedFastings.value.indexOf(day.id)
+    if (idx === -1) markedFastings.value.push(day.id)
+    else markedFastings.value.splice(idx, 1)
+    return
+  }
   selectedDay.value = day
   showModal.value = true
+}
+
+function handleMarkedSectionSuccess() {
+  markMode.value = false
+  markedFastings.value = []
+  isMarkedAll.value = false
+}
+
+function handleMarkedSectionCancel() {
+  markMode.value = false
+  markedFastings.value = []
+  isMarkedAll.value = false
+}
+
+function handleMarkedAllChange(value: boolean) {
+  if (value) {
+    markedFastings.value = (data.value ?? []).map((f) => f.id)
+  } else {
+    markedFastings.value = []
+  }
 }
 
 function handleCompleteClick() {
@@ -66,25 +102,54 @@ function handleCompleteClick() {
 
 <template>
   <BaseSpin :spinning="isPending">
-    <div class="grid lg:grid-cols-4 gap-4 grid-cols-2" :style="{marginBottom : isMobile ? '64px' : ''}">
-      <div class="lg:col-span-3 col-span-3">
+    <div class="grid lg:grid-cols-4 gap-4" :style="{marginBottom : isMobile ? '64px' : ''}">
+      <div class="lg:col-span-3">
         <div class="flex justify-between items-center gap-2">
           <div class="flex flex-col gap-2">
             <TypographyTitle :level="2"> Qazo ro'zalar </TypographyTitle>
             <TypographyText type="secondary">
               Qazo ro'zalaringizni ko'ring va ularni o'zgartiring
             </TypographyText>
+            <div v-if="markMode" class="flex items-center gap-2">
+              <BaseCheckbox
+                id="isMarkedAllFasting"
+                :is-bordered="false"
+                v-model="isMarkedAll"
+                @change="handleMarkedAllChange"
+              />
+              <BaseFormLabel for="isMarkedAllFasting">Hammasini belgilash (yillik)</BaseFormLabel>
+            </div>
           </div>
           <div>
-            <ActionButtons v-if="!isMobile" view-mode="dropdown"></ActionButtons>
+            <ActionButtons
+              v-if="!isMobile"
+              view-mode="dropdown"
+              @add="isVisibleAdd = true"
+              @download="downloadPdf()"
+              @mark="markMode = true"
+              @stats="isVisibleStatistic = true"
+            ></ActionButtons>
           </div>
         </div>
         <div class="mb-4">
           <ActionButtons
-            @stats="isVisibleStatistic = true"
             v-if="isMobile"
             view-mode="button"
+            @add="isVisibleAdd = true"
+            @download="downloadPdf()"
+            @mark="markMode = true"
+            @stats="isVisibleStatistic = true"
           ></ActionButtons>
+        </div>
+        <div
+          v-if="markMode"
+          class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 text-sm"
+        >
+          <span class="material-symbols-outlined text-primary text-base">info</span>
+          <span>Belgilash rejimi yoqilgan — ro'zalarni tanlash uchun ularga bosing</span>
+          <button @click="handleMarkedSectionCancel" class="ml-auto underline text-xs cursor-pointer">
+            Bekor qilish
+          </button>
         </div>
         <BaseBox>
           <!-- Calendar Container -->
@@ -141,6 +206,17 @@ function handleCompleteClick() {
                   class="group relative flex flex-col items-center cursor-pointer"
                   @click="openDayModal(day)"
                 >
+                  <div
+                    v-if="markMode"
+                    class="absolute top-1 right-1 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                    :class="markedFastings.includes(day.id) ? 'bg-primary border-primary' : 'bg-white/10 border-white/40'"
+                  >
+                    <span
+                      v-if="markedFastings.includes(day.id)"
+                      class="material-symbols-outlined text-white"
+                      style="font-size: 12px"
+                    >check</span>
+                  </div>
                   <div
                     :class="[
                       'relative w-full aspect-3/4 rounded-t-[50%] rounded-b-lg overflow-hidden transition-all duration-300 hover:scale-105',
@@ -208,8 +284,8 @@ function handleCompleteClick() {
           </div>
         </BaseBox>
       </div>
-      <div class="lg:col-span-1 col-span-2" v-if="!isMobile">
-        <div class="lg:col-span-1 col-span-1 sticky top-0 h-full">
+      <div class="lg:col-span-1" v-if="!isMobile">
+        <div class="sticky top-0 h-full">
           <div class="space-y-6">
             <BaseBox>
               <MonthlyStatistic :monthlyProgress :stats componentMode="plain"></MonthlyStatistic>
@@ -304,6 +380,16 @@ function handleCompleteClick() {
         </div>
       </div>
     </BaseModal>
+
+    <MarkedFastingSection
+      v-model:visible="markMode"
+      :markedFastings="markedFastings"
+      @clear="markedFastings = []"
+      @success="handleMarkedSectionSuccess"
+      @cancel="handleMarkedSectionCancel"
+    />
+
+    <AddFastingModal v-model="isVisibleAdd" />
   </BaseSpin>
 </template>
 

@@ -23,6 +23,15 @@ export const queryKeys = {
     generate: 'fasting.generate',
     list: 'fasting.list',
     singleComplete: 'fasting.complete',
+    completeMultiple: 'fasting.complete.multiple',
+    uncompleteMultiple: 'fasting.uncomplete.multiple',
+    downloadAsPdf: 'fasting.pdf',
+  },
+  notes: {
+    list: 'notes.list',
+    create: 'notes.create',
+    update: 'notes.update',
+    delete: 'notes.delete',
   },
   dashboard : {
     prayersCount : 'dashboard.prayersCount',

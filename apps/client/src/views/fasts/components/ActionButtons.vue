@@ -32,18 +32,18 @@ defineProps<Props>()
             </template>Yuklab olish
           </BaseButton>
         </MenuItem>
-        <!-- <MenuItem>
+        <MenuItem>
           <BaseButton @click="emit('mark')" type="ghost" size="small">
             <template #icon>
               <span class="material-symbols-outlined mr-1 align-top">check_circle</span>
             </template>
             Belgilash
           </BaseButton>
-        </MenuItem> -->
+        </MenuItem>
       </Menu>
     </template>
   </Dropdown>
-  <div v-else-if="viewMode==='button'" class="flex items-center gap-1  flex-wrap">
+  <div v-else-if="viewMode==='button'" class="flex items-center gap-1 flex-wrap">
     <BaseButton @click="emit('add')" size="large" type="default">
       <template #icon>
         <span class="material-symbols-outlined mr-1 align-top">add</span>
@@ -53,15 +53,15 @@ defineProps<Props>()
     <BaseButton type="default" size="large" @click="emit('download')">
       <template #icon>
         <span class="material-symbols-outlined mr-1 align-top">download</span>
-
-      </template> Yuklab olish
+      </template>
+      Yuklab olish
     </BaseButton>
-    <!-- <BaseButton @click="emit('mark')" type="default" size="large">
+    <BaseButton @click="emit('mark')" type="default" size="large">
       <template #icon>
         <span class="material-symbols-outlined mr-1 align-top">check_circle</span>
       </template>
       Belgilash
-    </BaseButton> -->
+    </BaseButton>
     <BaseButton @click="emit('stats')" type="default" size="large">
       <template #icon>
         <span class="material-symbols-outlined mr-1 align-top">insights</span>

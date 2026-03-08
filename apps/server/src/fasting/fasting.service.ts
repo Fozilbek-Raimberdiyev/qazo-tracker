@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QazoFasting } from './entities/fasting.entity';
 import moment from 'moment-hijri';
+import { FastingPdfService } from './fasting-pdf.service';
 
 interface RamadanDate {
   date: string; // YYYY-MM-DD (milodiy)
@@ -18,6 +19,7 @@ export class FastingService {
   constructor(
     @InjectRepository(QazoFasting)
     private fastingRepo: Repository<QazoFasting>,
+    private fastingPdfService: FastingPdfService,
   ) {}
 
   /**
@@ -152,6 +154,60 @@ export class FastingService {
       uncompletedCount,
       fastingList,
     };
+  }
+
+  async completeFastingsMultiple(fastingIds: string[], userId: string): Promise<void> {
+    await this.fastingRepo
+      .createQueryBuilder()
+      .update(QazoFasting)
+      .set({ isCompleted: true, completedAt: new Date() })
+      .where('id IN (:...fastingIds)', { fastingIds })
+      .andWhere('user_id = :userId', { userId })
+      .execute();
+  }
+
+  async uncompleteFastingsMultiple(fastingIds: string[], userId: string): Promise<void> {
+    await this.fastingRepo
+      .createQueryBuilder()
+      .update(QazoFasting)
+      .set({ isCompleted: false, completedAt: null as unknown as Date })
+      .where('id IN (:...fastingIds)', { fastingIds })
+      .andWhere('user_id = :userId', { userId })
+      .execute();
+  }
+
+  async addSingleFasting(userId: string, date: string): Promise<{ success: boolean }> {
+    const m = moment(date, 'YYYY-MM-DD');
+    await this.fastingRepo.query(
+      `INSERT INTO qazo_fasting (user_id, date, hijri_date, day_of_ramadan, gregorian_year, hijri_year)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        userId,
+        date,
+        m.format('iYYYY/iMM/iDD'),
+        m.iDate(),
+        m.year(),
+        m.iYear(),
+      ],
+    );
+    return { success: true };
+  }
+
+  async generateFastingPdf(
+    userId: string,
+    userInfo?: { name: string; email: string },
+  ): Promise<Buffer> {
+    const fastingList = await this.fastingRepo
+      .createQueryBuilder('fasting')
+      .where('fasting.user_id = :userId', { userId })
+      .orderBy('fasting.date', 'ASC')
+      .getMany();
+
+    if (!fastingList || fastingList.length === 0) {
+      throw new Error("Ro'zalar topilmadi");
+    }
+
+    return this.fastingPdfService.generateFastingPdf(fastingList, userInfo);
   }
 
   // formatDate

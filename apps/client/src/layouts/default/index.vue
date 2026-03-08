@@ -7,7 +7,6 @@ import { useAuth } from '@/composables/useAuth'
 import { useDeviceStore } from '@/stores/device.store'
 import { storeToRefs } from 'pinia'
 import MobileMenu from './components/MobileMenu.vue'
-import BaseButton from '@/components/BaseButton/BaseButton.vue'
 const { user, isPending } = useAuth()
 const { isMobile } = storeToRefs(useDeviceStore())
 const router = useRouter()
@@ -73,7 +72,7 @@ router.beforeEach(() => {
         <nav>
           <div class="flex flex-col gap-2" v-for="(item, index) in menuItemsList" :key="index">
             <RouterLink
-              v-if="item.visible && !item.badge"
+              v-if="item.visible"
               class="flex items-center gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors"
               :to="item.path"
               :title="!isExpanded ? item.label : ''"
@@ -86,23 +85,6 @@ router.beforeEach(() => {
                   {{ item.label }}
                 </span>
             </RouterLink>
-            <!-- <Badge v-else color="red" status="success" :count="item.badgeContent"> -->
-               <RouterLink disabled :to="item.path" v-else-if="item.visible && item.badge" view-transition
-
-                 :title="!isExpanded ? item.label : ''"
-               >
-               <BaseButton :disabled="item.badge" type="text" block class="flex! items-center  gap-3 px-3 py-2 dark:text-white/70 dark:hover:text-white hover:bg-white/5 rounded-lg transition-colors text-black! w-full" >
-               <span class="material-symbols-outlined">{{ item.icon }}</span>
-                 <span
-                   v-show="isExpanded"
-                   class="text-sm font-medium leading-normal whitespace-nowrap overflow-hidden"
-                 >
-                   {{ item.label }}
-                 </span>
-              </BaseButton>
-
-               </RouterLink>
-               <!-- </Badge> -->
           </div>
         </nav>
       </div>

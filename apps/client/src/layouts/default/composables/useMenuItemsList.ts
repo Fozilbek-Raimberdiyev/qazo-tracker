@@ -31,8 +31,6 @@ export function useMenuItemsList() {
         icon: 'notes',
         path: '/notes',
         visible: true,
-        badge: true,
-        badgeContent: 'Tez kunda',
       },
       {
         label: 'Sozlamalar',

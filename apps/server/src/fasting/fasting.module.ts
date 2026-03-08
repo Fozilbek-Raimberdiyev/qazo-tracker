@@ -4,10 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { QazoFasting } from './entities/fasting.entity';
 import { FastingService } from './fasting.service';
 import { FastingController } from './fasting.controller';
+import { FastingPdfService } from './fasting-pdf.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([QazoFasting])],
-  providers: [FastingService],
+  providers: [FastingService, FastingPdfService],
   controllers: [FastingController],
   exports: [FastingService],
 })
