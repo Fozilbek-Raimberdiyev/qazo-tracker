@@ -106,86 +106,47 @@ export class StatisticService {
 
   async getMonthlyCompletedPrayersByYear(
     userId: string,
-    year?: number, // optional qilib qo'ydik
-  ): Promise<{ year: number; month: number; completedCount: number }[]> {
-    let sql: string;
-    let params: any[] = [userId];
-
-    if (year) {
-      // Faqat tanlangan yil uchun 12 oy
-      sql = `
-      WITH months AS (
-        SELECT
-          $2::INTEGER AS year,
-          gs.month_num AS month
-        FROM generate_series(1, 12) AS gs(month_num)
-      ),
-      completions AS (
-        SELECT
-          EXTRACT(MONTH FROM "completedAt")::INTEGER AS month,
-          COUNT(*) AS "completedCount"
-        FROM qazo_prayers
-        WHERE "userId" = $1
-          AND "isCompleted" = true
-          AND "completedAt" IS NOT NULL
-          AND EXTRACT(YEAR FROM "completedAt")::INTEGER = $2
-        GROUP BY EXTRACT(MONTH FROM "completedAt")
-      )
+    year: number,
+  ): Promise<{ date: string; completedCount: number }[]> {
+    const sql = `
       SELECT
-        m.year,
-        m.month,
-        COALESCE(c."completedCount", 0) AS "completedCount"
-      FROM months m
-      LEFT JOIN completions c ON m.month = c.month
-      ORDER BY m.month ASC;
+        TO_CHAR(DATE("completedAt"), 'YYYY-MM-DD') AS date,
+        COUNT(*) AS "completedCount"
+      FROM qazo_prayers
+      WHERE "userId" = $1
+        AND "isCompleted" = true
+        AND "completedAt" IS NOT NULL
+        AND EXTRACT(YEAR FROM "completedAt")::INTEGER = $2
+      GROUP BY DATE("completedAt")
+      ORDER BY DATE("completedAt") ASC
     `;
-      params.push(year);
-    }
-    // @ts-expect-error
-    const result = await this.qazoPrayer.query(sql, params);
-
+    const result = await this.qazoPrayer.query(sql, [userId, year]);
     return result.map((row) => ({
-      year: Number(row.year),
-      month: Number(row.month),
+      date: row.date,
       completedCount: Number(row.completedCount),
     }));
   }
 
-  async getMonthlyCompletedFastingByYear(userId: string, year?: number): Promise<any[]> {
+  async getMonthlyCompletedFastingByYear(
+    userId: string,
+    year: number,
+  ): Promise<{ date: string; completedCount: number }[]> {
     const sql = `
-    WITH months AS (
       SELECT
-        $2::INTEGER AS year,
-        gs.month_num AS month
-      FROM generate_series(1, 12) AS gs(month_num)
-    ),
-    completions AS (
-      SELECT
-        EXTRACT(MONTH FROM "completedAt")::INTEGER AS month,
+        TO_CHAR(DATE("completedAt"), 'YYYY-MM-DD') AS date,
         COUNT(*) AS "completedCount"
       FROM qazo_fasting
       WHERE "user_id" = $1
         AND "isCompleted" = true
         AND "completedAt" IS NOT NULL
         AND EXTRACT(YEAR FROM "completedAt")::INTEGER = $2
-      GROUP BY EXTRACT(MONTH FROM "completedAt")
-    )
-    SELECT
-      m.year,
-      m.month,
-      COALESCE(c."completedCount", 0) AS "completedCount"
-    FROM months m
-    LEFT JOIN completions c ON m.month = c.month
-    ORDER BY m.month ASC;
-  `;
-    const params = [userId, year];
-    return await this.qazoFasting.query(sql, params).then((result) => result.map(
-      (row) => ({
-        year: Number(row.year),
-        month: Number(row.month),
-        completedCount: Number(row.completedCount),
-      }),
-    )
-    )
+      GROUP BY DATE("completedAt")
+      ORDER BY DATE("completedAt") ASC
+    `;
+    const result = await this.qazoFasting.query(sql, [userId, year]);
+    return result.map((row) => ({
+      date: row.date,
+      completedCount: Number(row.completedCount),
+    }));
   }
 }

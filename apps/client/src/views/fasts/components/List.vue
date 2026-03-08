@@ -102,55 +102,60 @@ function handleCompleteClick() {
 
 <template>
   <BaseSpin :spinning="isPending">
-    <div class="grid lg:grid-cols-4 gap-4" :style="{marginBottom : isMobile ? '64px' : ''}">
-      <div class="lg:col-span-3">
-        <div class="flex justify-between items-center gap-2">
-          <div class="flex flex-col gap-2">
-            <TypographyTitle :level="2"> Qazo ro'zalar </TypographyTitle>
-            <TypographyText type="secondary">
-              Qazo ro'zalaringizni ko'ring va ularni o'zgartiring
-            </TypographyText>
-            <div v-if="markMode" class="flex items-center gap-2">
-              <BaseCheckbox
-                id="isMarkedAllFasting"
-                :is-bordered="false"
-                v-model="isMarkedAll"
-                @change="handleMarkedAllChange"
-              />
-              <BaseFormLabel for="isMarkedAllFasting">Hammasini belgilash (yillik)</BaseFormLabel>
-            </div>
-          </div>
-          <div>
-            <ActionButtons
-              v-if="!isMobile"
-              view-mode="dropdown"
-              @add="isVisibleAdd = true"
-              @download="downloadPdf()"
-              @mark="markMode = true"
-              @stats="isVisibleStatistic = true"
-            ></ActionButtons>
+    <!-- PageHeading -->
+    <div class="grid grid-cols-4 gap-4">
+      <div class="col-span-3 flex items-center justify-between">
+        <div class="flex flex-col gap-2">
+          <TypographyTitle :level="2"> Qazo ro'zalar </TypographyTitle>
+          <TypographyText type="secondary">
+            Qazo ro'zalaringizni ko'ring va ularni o'zgartiring
+          </TypographyText>
+          <div v-if="markMode" class="flex items-center gap-2">
+            <BaseCheckbox
+              id="isMarkedAllFasting"
+              :is-bordered="false"
+              v-model="isMarkedAll"
+              @change="handleMarkedAllChange"
+            />
+            <BaseFormLabel for="isMarkedAllFasting">Hammasini belgilash (yillik)</BaseFormLabel>
           </div>
         </div>
-        <div class="mb-4">
+        <div>
           <ActionButtons
-            v-if="isMobile"
-            view-mode="button"
+            v-if="!isMobile"
+            view-mode="dropdown"
             @add="isVisibleAdd = true"
             @download="downloadPdf()"
             @mark="markMode = true"
             @stats="isVisibleStatistic = true"
           ></ActionButtons>
         </div>
-        <div
-          v-if="markMode"
-          class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 text-sm"
-        >
-          <span class="material-symbols-outlined text-primary text-base">info</span>
-          <span>Belgilash rejimi yoqilgan — ro'zalarni tanlash uchun ularga bosing</span>
-          <button @click="handleMarkedSectionCancel" class="ml-auto underline text-xs cursor-pointer">
-            Bekor qilish
-          </button>
-        </div>
+      </div>
+      <div class="col-span-1"></div>
+    </div>
+    <div class="mt-2 mb-4">
+      <ActionButtons
+        v-if="isMobile"
+        view-mode="button"
+        @add="isVisibleAdd = true"
+        @download="downloadPdf()"
+        @mark="markMode = true"
+        @stats="isVisibleStatistic = true"
+      ></ActionButtons>
+    </div>
+    <div
+      v-if="markMode"
+      class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 text-sm"
+    >
+      <span class="material-symbols-outlined text-primary text-base">info</span>
+      <span>Belgilash rejimi yoqilgan — ro'zalarni tanlash uchun ularga bosing</span>
+      <button @click="handleMarkedSectionCancel" class="ml-auto underline text-xs cursor-pointer">
+        Bekor qilish
+      </button>
+    </div>
+    <!-- Content Grid -->
+    <div class="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-4 relative" :style="{marginBottom: isMobile ? '64px' : ''}">
+      <div class="lg:col-span-3">
         <BaseBox>
           <!-- Calendar Container -->
           <div>
@@ -284,13 +289,11 @@ function handleCompleteClick() {
           </div>
         </BaseBox>
       </div>
-      <div class="lg:col-span-1" v-if="!isMobile">
-        <div class="sticky top-0 h-full">
-          <div class="space-y-6">
-            <BaseBox>
-              <MonthlyStatistic :monthlyProgress :stats componentMode="plain"></MonthlyStatistic>
-            </BaseBox>
-          </div>
+      <div class="lg:col-span-1 sticky top-0 h-full" v-if="!isMobile">
+        <div class="space-y-6">
+          <BaseBox>
+            <MonthlyStatistic :monthlyProgress :stats componentMode="plain"></MonthlyStatistic>
+          </BaseBox>
         </div>
       </div>
     </div>

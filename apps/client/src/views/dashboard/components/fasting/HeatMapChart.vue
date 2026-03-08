@@ -40,12 +40,7 @@ const dateRange = computed(() => {
 // API dan kelgan ma'lumotlarni heatmap formatiga o'tkazish
 const heatmapData = computed(() => {
   if (!data.value || data.value.length === 0) return []
-
-  return data.value.map((item) => {
-    // Yil va oydan sana yaratish (oyning 1-kuni)
-    const dateStr = `${item.year}-${String(item.month).padStart(2, '0')}-01`
-    return [dateStr, item.completedCount]
-  })
+  return data.value.map((item) => [item.date, item.completedCount])
 })
 
 // Maksimal qiymatni topish (visualMap uchun)
@@ -90,8 +85,9 @@ const initChart = async (): Promise<void> => {
             'Noyabr',
             'Dekabr',
           ]
+          const day = date.getDate().toString().padStart(2, '0')
           return `
-            <strong>${monthNames[date.getMonth()]} ${date.getFullYear()}</strong><br/>
+            <strong>${day} ${monthNames[date.getMonth()]}, ${date.getFullYear()}</strong><br/>
             Bajarilgan: ${params.data[1]}
           `
         },

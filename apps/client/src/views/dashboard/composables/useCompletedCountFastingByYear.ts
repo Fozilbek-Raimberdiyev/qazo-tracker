@@ -4,8 +4,7 @@ import { useQuery } from '@tanstack/vue-query'
 import type { AxiosResponse } from 'axios'
 import { ref } from 'vue'
 interface CountItem {
-  year: number
-  month: number
+  date: string
   completedCount: number
 }
 export function useCompletedCountFastingByYear() {
